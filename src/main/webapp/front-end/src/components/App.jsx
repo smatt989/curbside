@@ -14,6 +14,7 @@ import PrivateRouteContainer from './PrivateRoute.jsx';
 import FeedContainer from './feed/Feed.jsx';
 import NewQuestionContainer from './question_forms/NewQuestion.jsx';
 import FullQuestionContainer from './question_forms/FullQuestion.jsx';
+import EditAnswerContainer from './question_forms/EditAnswer.jsx';
 import Err from './Error.jsx';
 
 export default class App extends React.Component {
@@ -28,6 +29,8 @@ export default class App extends React.Component {
           <Route exact path="/feed" component={FeedContainer}/>
           <Route exact path="/questions/new" component={NewQuestionContainer}/>
           <PrivateRouteContainer exact path="/question/:id" component={FullQuestionContainer}/>
+          <PrivateRouteContainer exact path="/question/:id/edit" component={NewQuestionContainer}/>
+          <PrivateRouteContainer exact path="/question/:qid/answers/:aid" component={EditAnswerContainer}/>
           <Route component={Err}/>
         </Switch>
       </div>

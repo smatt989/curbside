@@ -20,6 +20,11 @@ class Feed extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this.props.getQuestionFeed(this.state.page)
+    this.setState({page: this.state.page + 1})
+  }
+
   render() {
 
 
@@ -31,10 +36,7 @@ class Feed extends React.Component {
             <Link to="/questions/new"><Button className="col-md-2 col-md-push-4" bsStyle="success">New Question</Button></Link>
             <div className="col-md-12">
                 <ListGroup componentClass="ul">
-                    <Question />
-                    <Question />
-                    <Question />
-                    <Question />
+                    {this.props.questionFeed.get('feed').map(q => <Question question={q} />)}
                 </ListGroup>
             </div>
         </Grid>

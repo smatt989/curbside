@@ -24,3 +24,33 @@
 .question-body p {
     color: @brand-grey-minus-20;
 }
+
+.comments .list-group-item {
+    padding: 8px 8px 8px 6px
+}
+
+.triangle-up {
+	width: 0;
+	height: 0;
+	border-left: 14px solid transparent;
+	border-right: 14px solid transparent;
+	border-bottom: 28px solid @brand-grey-plus-20;
+	margin-left: 16px;
+}
+
+.triangle-down {
+	width: 0;
+	height: 0;
+	border-left: 14px solid transparent;
+	border-right: 14px solid transparent;
+	border-top: 28px solid @brand-grey-plus-20;
+	margin-left: 16px;
+}
+
+.triangle-up:hover {
+    border-bottom-color: @brand-grey-minus-20;
+}
+
+.triangle-down:hover {
+    border-top-color: @brand-grey-minus-20;
+}

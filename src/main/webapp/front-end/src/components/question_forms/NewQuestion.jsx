@@ -12,7 +12,7 @@ import {
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
-import { saveQuestion, saveQuestionSuccess, saveQuestionError } from '../../actions.js';
+import { saveQuestion, saveQuestionSuccess, saveQuestionError, getQuestion, getQuestionSuccess, getQuestionError } from '../../actions.js';
 import { tryLogin, dispatchPattern } from '../../utilities.js';
 import NavBar from '../NavBar.jsx';
 
@@ -21,11 +21,14 @@ class NewQuestion extends React.Component {
     super(props);
     this.state = {
       title: '',
-      body: ''
+      body: '',
+      successfulSave: false
     };
 
     this.changeTitle = this.changeTitle.bind(this)
     this.changeBody = this.changeBody.bind(this)
+    this.getQuestionId = this.getQuestionId.bind(this)
+    this.readQuestionFromState = this.readQuestionFromState.bind(this)
   }
 
   changeTitle(e) {
@@ -36,10 +39,33 @@ class NewQuestion extends React.Component {
     this.setState({body: e.target.value})
   }
 
+  getQuestionId() {
+    return this.props.match.params.id
+  }
+
+  readQuestionFromState() {
+    const question = this.props.question.getIn(['question', 'question'])
+    this.setState({title: question.get('title'), body: question.get('text'), id: question.get('id')})
+  }
+
+  componentDidMount() {
+    const questionId = this.getQuestionId()
+
+    if(questionId){
+        this.props.getQuestion(this.readQuestionFromState)(questionId)
+    }
+  }
+
   render() {
-    console.log(this.state)
 
     var disabled = this.state.title.length < 5
+
+    var saveText = this.state.id ? "Save Changes" : "Submit Question"
+
+    if(this.state.successfulSave){
+        console.log()
+        return <Redirect to={'/question/'+this.props.savedQuestion.getIn(['question', 'id'])} />
+    }
 
     return (
       <div >
@@ -65,7 +91,7 @@ class NewQuestion extends React.Component {
                   </FormGroup>
 
                   <FormGroup className="text-xs-center">
-                    <Button onClick={() => this.props.saveQuestion(this.state.title, this.state.body)} bsStyle="primary" disabled={disabled}>Submit Question</Button>
+                    <Button onClick={() => this.props.saveQuestion(() => this.setState({successfulSave: true}))(this.state.title, this.state.body, this.state.id)} bsStyle="primary" disabled={disabled}>{saveText}</Button>
                   </FormGroup>
 
                 </Form>
@@ -79,13 +105,18 @@ class NewQuestion extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    question: state.get('saveQuestion')
+    savedQuestion: state.get('saveQuestion'),
+    question: state.get('getQuestion')
   };
 };
 
 const mapDispatchToProps = (dispatch, ownProps) => {
+  const getQuestionWithCallback = (callback) => dispatchPattern(getQuestion, getQuestionSuccess, getQuestionError, callback)
+  const saveQuestionWithCallback = (callback) => dispatchPattern(saveQuestion, saveQuestionSuccess, saveQuestionError, callback)
+
   return {
-    saveQuestion: dispatchPattern(saveQuestion, saveQuestionSuccess, saveQuestionError)
+    saveQuestion: saveQuestionWithCallback,
+    getQuestion: getQuestionWithCallback
   };
 };
 

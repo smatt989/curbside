@@ -14,6 +14,8 @@ import Comment from './Comment.jsx';
 class CommentsList extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {addComment: false}
   }
 
   render() {
@@ -22,13 +24,19 @@ class CommentsList extends React.Component {
 
     const comments = this.props.comments
 
+    var newComment = <Link onClick={() => this.setState({addComment: true})} to="#">Add comment</Link>
+
+    if(this.state.addComment){
+        newComment = <NewCommentContainer questionId={this.props.questionId} answerId={this.props.answerId} refresh={refresh} />
+    }
+
     return (
       <div >
         <ListGroup componentClass="ul">
             {comments.map(c => <Comment comment={c} />)}
         </ListGroup>
         <div>
-            <NewCommentContainer questionId={this.props.questionId} answerId={this.props.answerId} refresh={refresh} />
+            {newComment}
         </div>
       </div>
 

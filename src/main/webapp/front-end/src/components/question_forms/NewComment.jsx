@@ -37,8 +37,7 @@ class NewComment extends React.Component {
 
   onSubmit() {
     const text = this.state.text
-    this.props.saveComment(text, this.props.questionId, this.props.answerId)
-    this.clearText()
+    this.props.saveComment(this.clearText)(text, this.props.questionId, this.props.answerId)
   }
 
   render() {
@@ -73,8 +72,13 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = (dispatch, ownProps) => {
 
+  const saveCommentWithCallback = (callback) => dispatchPattern(saveComment, saveCommentSuccess, saveCommentError, function(){
+    ownProps.refresh()
+    callback()
+  })
+
   return {
-    saveComment: dispatchPattern(saveComment, saveCommentSuccess, saveCommentError, ownProps.refresh)
+    saveComment: saveCommentWithCallback
   };
 };
 

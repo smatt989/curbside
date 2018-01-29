@@ -1,4 +1,5 @@
 import React from 'react';
+import { List } from 'immutable';
 import {
   Button,
   ButtonGroup,
@@ -7,16 +8,16 @@ import {
 import { Link, Redirect } from 'react-router-dom';
 import InfoBox from './InfoBox.jsx';
 
-const Question = ({  }) => {
+const Question = ({ question }) => {
 
   return (
-    <Link to={"/hello"}>
+    <Link to={"/question/"+question.getIn(['question', 'id'])}>
         <ListGroupItem className="question-feed-item">
-            <InfoBox major={4} minor={"views"} />
-            <InfoBox major={2} minor={"answers"} />
+            <InfoBox major={question.get('viewCount', 0)} minor={"views"} />
+            <InfoBox major={question.get('answers', List.of()).size} minor={"answers"} />
             <div className="inline content-box">
-                <h3>This is a very serious question!</h3>
-                <p>Last update: 10:26pm Fri, October 16, 1988</p>
+                <h3>{question.getIn(['question', 'title'])}</h3>
+                <p>Last update: {new Date(question.getIn(['question', 'updatedMillis'])).toDateString()}</p>
             </div>
         </ListGroupItem>
     </Link>

@@ -9,14 +9,15 @@ import {
   ControlLabel,
   Col
 } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 
 const PointsBox = ({ major, saveReview, answerId }) => {
   return (
             <div className="inline info-box text-xs-center">
-                <Button onClick={() => saveReview(answerId, true)}>Upvote</Button>
+                <Link to="#"><div className="triangle-up" onClick={() => saveReview(answerId, true)}></div></Link>
                 <h2>{major}</h2>
-                <Button onClick={() => saveReview(answerId, false)}>Downvote</Button>
+                <Link to="#"><div className="triangle-down" onClick={() => saveReview(answerId, false)}></div></Link>
             </div>
   );
 };

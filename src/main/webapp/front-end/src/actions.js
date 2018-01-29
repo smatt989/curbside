@@ -190,7 +190,7 @@ export function getQuestionError(error) {
 export function getQuestionFeed(page) {
   const request = axios({
     method: 'get',
-    url: `${domain}/feed/${page}`,
+    url: `${domain}/questions/feed/${page}`,
     headers: authenticate()
   });
 

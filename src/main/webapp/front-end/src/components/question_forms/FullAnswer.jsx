@@ -51,7 +51,7 @@ class FullAnswer extends React.Component {
                         </p>
                     </div>
                     <div className="action-box">
-                        <Link to="/edit">edit</Link>
+                        <Link to={"/question/"+this.props.questionId+"/answers/"+answerId}>edit</Link>
                     </div>
                     <div className="poster-box">
                         <p>Answered by <b>matt</b> on {new Date(answer.getIn(['answer', 'updatedMillis'])).toDateString()}</p>

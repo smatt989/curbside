@@ -16,31 +16,44 @@ import { Link, Redirect } from 'react-router-dom';
 import { getQuestion, getQuestionSuccess, getQuestionError, createQuestionView, createQuestionViewSuccess, createQuestionViewError } from '../../actions.js';
 import { tryLogin, dispatchPattern } from '../../utilities.js';
 import NavBar from '../NavBar.jsx';
-import InfoBox from '../feed/InfoBox.jsx';
-import CommentsListContainer from './CommentsList.jsx';
-import AnswersListContainer from './AnswersList.jsx';
+import NewAnswerContainer from './NewAnswer.jsx';
 
-class FullQuestion extends React.Component {
+class EditAnswer extends React.Component {
   constructor(props) {
     super(props);
 
     this.getQuestionId = this.getQuestionId.bind(this)
+    this.getAnswerId = this.getAnswerId.bind(this)
   }
 
   getQuestionId() {
-    return this.props.match.params.id
+    return this.props.match.params.qid
+  }
+
+  getAnswerId() {
+    return this.props.match.params.aid
   }
 
   componentDidMount() {
     const questionId = this.getQuestionId()
     this.props.getQuestion(questionId)
-    this.props.createQuestionView(questionId)
   }
 
   render() {
     const questionId = this.getQuestionId()
+    const answerId = this.getAnswerId()
 
     const refresh = () => this.props.getQuestion(questionId)
+
+    const answer = this.props.question.getIn(['question', 'answers'], List.of()).find(a => a.getIn(['answer', 'id']) == answerId)
+
+    var answerBox = null
+
+    if(answer){
+        answerBox = <NewAnswerContainer refresh={refresh} questionId={questionId} answer={answer} />
+    }
+
+    console.log(answer)
 
     return (
       <div >
@@ -48,29 +61,16 @@ class FullQuestion extends React.Component {
         <Grid>
             <h3 className="m-b-3">{this.props.question.getIn(['question', 'question', 'title'], '')}</h3>
             <div>
-                <div className="col-md-1">
-                    <InfoBox major={this.props.question.getIn(['question', 'viewCount'], 0)} minor={"views"} />
-                </div>
-                <div className="col-md-11">
+                <div className="col-md-12">
                     <div className="question-body">
                         <p>
                             {this.props.question.getIn(['question', 'question', 'text'], '')}
                         </p>
                     </div>
-                    <div className="action-box">
-                        <Link to={"/question/"+questionId+"/edit"}>edit</Link>
-                    </div>
-                    <div className="poster-box">
-                        <p>Last updated by <b>matt</b> on {new Date(this.props.question.getIn(['question', 'question', 'updatedMillis'], 0)).toDateString()}</p>
-                    </div>
-                    <div className="comments">
-                        <CommentsListContainer comments={this.props.question.getIn(['question', 'comments'], List.of())} refresh={refresh} questionId={questionId} />
-                    </div>
                 </div>
             </div>
             <div>
-                <h3>Answers</h3>
-                <AnswersListContainer refresh={refresh} questionId={questionId} />
+                {answerBox}
             </div>
         </Grid>
       </div>
@@ -98,9 +98,9 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   };
 };
 
-const FullQuestionContainer = connect(
+const EditAnswerContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(FullQuestion);
+)(EditAnswer);
 
-export default FullQuestionContainer;
+export default EditAnswerContainer;
