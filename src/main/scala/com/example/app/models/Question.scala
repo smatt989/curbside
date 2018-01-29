@@ -15,8 +15,8 @@ import scala.concurrent.duration.Duration
   */
 object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
   def updateQuery(a: _root_.com.example.app.db.Tables.QuestionsRow) = table.filter(t => idColumnFromTable(t) === idFromRow(a))
-    .map(x => (x.questionText, x.updatedMillis))
-    .update((a.questionText, a.updatedMillis))
+    .map(x => (x.questionTitle, x.questionText, x.updatedMillis))
+    .update((a.questionTitle, a.questionText, a.updatedMillis))
 
   lazy val table = Questions
 
@@ -30,7 +30,7 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
     a.questionId
 
   def toJson(userId: Int, question: QuestionsRow) =
-    QuestionJson(question.questionId, question.questionText, question.createdMillis, question.updatedMillis, userId == question.creatorId)
+    QuestionJson(question.questionId, question.questionTitle, question.questionText, question.createdMillis, question.updatedMillis, userId == question.creatorId)
 
 
   def fullQuestionsFromQuestionRows(questions: Seq[QuestionsRow], userId: Int) = {
@@ -38,6 +38,8 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
     val reviews = Await.result(Review.byAnswerIds(answers.map(_.answerId)), Duration.Inf)
     val questionComments = Await.result(Comment.byQuestionIds(questions.map(_.questionId)), Duration.Inf)
     val answerComments = Await.result(Comment.byAnswerIds(answers.map(_.answerId)), Duration.Inf)
+
+    val questionViews = QuestionView.distinctViewsByQuestionIds(questions.map(_.questionId))
 
     val answersByQuestionId = answers.groupBy(_.questionId)
     val reviewsByAnswerId = reviews.groupBy(_.answerId)
@@ -49,12 +51,14 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
       val qcs = questionCommentsByQuestionId.get(Some(q.questionId)).getOrElse(Nil)
       val fullAnswers = as.map(a => {
         val rs = reviewsByAnswerId.get(a.answerId).getOrElse(Nil)
-        val acs = answerCommentsByAnswerId.get(Some(a.answerId)).getOrElse(Nil)
+        val acs = answerCommentsByAnswerId.get(Some(a.answerId)).getOrElse(Nil).sortBy(_.createdMillis)
 
-        AnswerFull(Answer.toJson(userId, a), acs.map(c => Comment.toJson(userId, c)), rs.map(Review.toJson))
-      })
+        val score = rs.count(_.isPositive) - rs.count(a => !a.isPositive)
 
-      QuestionFull(Question.toJson(userId, q), fullAnswers, qcs.map(c => Comment.toJson(userId, c)))
+        AnswerFull(Answer.toJson(userId, a), acs.map(c => Comment.toJson(userId, c)), rs.map(Review.toJson), score)
+      }).sortBy(_.score).reverse
+
+      QuestionFull(Question.toJson(userId, q), fullAnswers, qcs.map(c => Comment.toJson(userId, c)), questionViews(q.questionId))
     })
   }
 
@@ -88,15 +92,15 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
 
 }
 
-case class QuestionCreateObject(id: Option[String], text: String) {
+case class QuestionCreateObject(id: Option[String], title: String, text: String) {
   def toRow(creatorId: Int) = {
     val now = DateTime.now().getMillis
-    QuestionsRow(id.getOrElse(null), creatorId, text, now, now)
+    QuestionsRow(id.getOrElse(null), creatorId, title, text, now, now)
   }
 }
 
-case class QuestionJson(id: String, text: String, createdMillis: Long, updatedMillis: Long, creator: Boolean)
+case class QuestionJson(id: String, title: String, text: String, createdMillis: Long, updatedMillis: Long, creator: Boolean)
 
-case class QuestionFull(question: QuestionJson, answers: Seq[AnswerFull], comments: Seq[CommentJson])
+case class QuestionFull(question: QuestionJson, answers: Seq[AnswerFull], comments: Seq[CommentJson], viewCount: Int)
 
-case class AnswerFull(answer: AnswerJson, comments: Seq[CommentJson], reviews: Seq[ReviewJson])
+case class AnswerFull(answer: AnswerJson, comments: Seq[CommentJson], reviews: Seq[ReviewJson], score: Int)

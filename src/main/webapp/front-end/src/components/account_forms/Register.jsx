@@ -4,10 +4,11 @@ import {
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
-import { signupEmailChanged, signupPasswordChanged, signupClearInputs, createUser, createUserSuccess, createUserError } from '../../actions.js';
+import { signupUsernameChanged, signupEmailChanged, signupPasswordChanged, signupClearInputs, createUser, createUserSuccess, createUserError } from '../../actions.js';
 import { tryLogin } from '../../utilities.js';
 import EmailFormGroupContainer from './EmailFormGroup.jsx';
 import PasswordFormGroup from './PasswordFormGroup.jsx';
+import UsernameFormGroupContainer from './UsernameFormGroup.jsx';
 import NavBar from '../NavBar.jsx';
 
 class Register extends React.Component {
@@ -19,7 +20,7 @@ class Register extends React.Component {
 
     this.onSubmit = (e) => {
       e.preventDefault();
-      this.props.onSubmit(this.props.email, this.props.password)
+      this.props.onSubmit(this.props.username, this.props.email, this.props.password)
         .then(isSuccess => {
           this.setState({ redirectToReferrer: isSuccess })
           if (isSuccess) {
@@ -30,6 +31,7 @@ class Register extends React.Component {
   }
 
   render() {
+    const usernameInputProps = { value: this.props.username, placeholder: 'Choose your username', action: (username) => signupUsernameChanged(username) };
     const emailInputProps = { value: this.props.email, placeholder: 'Enter your email', action: (email) => signupEmailChanged(email) };
     const pwInputProps = { value: this.props.password, placeholder: 'Choose a password', action: (password) => signupPasswordChanged(password) };
     const { from } = this.props.location.state || { from: { pathname: '/' } }
@@ -44,6 +46,7 @@ class Register extends React.Component {
         <div className='col-md-push-4 col-md-4 content-block-inverse'>
           <h1 className='m-t-3 m-b-3'>Sign Up</h1>
           <form role='form' onSubmit={e => this.onSubmit(e)}>
+            <UsernameFormGroupContainer usernameInputProps={usernameInputProps}/>
             <EmailFormGroupContainer emailInputProps={emailInputProps}/>
             <PasswordFormGroup pwInputProps={pwInputProps}/>
             <div className='text-xs-center'>
@@ -64,15 +67,16 @@ class Register extends React.Component {
 const mapStateToProps = state => {
   return {
     email: state.getIn(['signupEmail', 'email']),
-    password: state.getIn(['signupPassword', 'password'])
+    password: state.getIn(['signupPassword', 'password']),
+    username: state.getIn(['signupUsername', 'username'])
   };
 };
 
 const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     // TODO onSubmit validation, prevent submission if error
-    onSubmit: (email, password) => {
-      return dispatch(createUser(email, password))
+    onSubmit: (username, email, password) => {
+      return dispatch(createUser(username, email, password))
         .then(response => {
           if (response.error) {
             dispatch(createUserError(response.error));

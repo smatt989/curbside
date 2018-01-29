@@ -7,6 +7,7 @@ object Migrations {
   lazy val all: Seq[Migration] = Seq(
     Migration1,
     Migration2,
-    Migration3
+    Migration3,
+    Migration4
   )
 }

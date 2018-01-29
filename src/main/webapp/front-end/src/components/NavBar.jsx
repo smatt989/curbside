@@ -10,13 +10,14 @@ const NavRight = (props) => {
   return props.session != null
     ? (
         <Nav pullRight>
+          <LinkContainer to="/feed"><NavItem eventKey={1}>Questions</NavItem></LinkContainer>
           <NavItem eventKey={2} onClick={() => props.logout(props.session)}>Log Out</NavItem>
         </Nav>
       )
     : (
       <Nav pullRight>
-        <LinkContainer to="/login"><NavItem eventKey={1}>Log In</NavItem></LinkContainer>
-        <LinkContainer to="/register"><NavItem eventKey={2}>Sign Up</NavItem></LinkContainer>
+        <LinkContainer to="/login"><NavItem eventKey={2}>Log In</NavItem></LinkContainer>
+        <LinkContainer to="/register"><NavItem eventKey={3}>Sign Up</NavItem></LinkContainer>
       </Nav>
     );
 };

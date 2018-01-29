@@ -11,6 +11,9 @@ import Home from './Home.jsx';
 import LoginContainer from './account_forms/Login.jsx';
 import RegisterContainer from './account_forms/Register.jsx';
 import PrivateRouteContainer from './PrivateRoute.jsx';
+import FeedContainer from './feed/Feed.jsx';
+import NewQuestionContainer from './question_forms/NewQuestion.jsx';
+import FullQuestionContainer from './question_forms/FullQuestion.jsx';
 import Err from './Error.jsx';
 
 export default class App extends React.Component {
@@ -22,6 +25,9 @@ export default class App extends React.Component {
           <Route exact path="/login" component={LoginContainer}/>
           <Route exact path="/register" component={RegisterContainer}/>
           <Route exact path="/recover" component={LoginContainer}/>
+          <Route exact path="/feed" component={FeedContainer}/>
+          <Route exact path="/questions/new" component={NewQuestionContainer}/>
+          <PrivateRouteContainer exact path="/question/:id" component={FullQuestionContainer}/>
           <Route component={Err}/>
         </Switch>
       </div>

@@ -8,21 +8,6 @@ import com.example.app._
 
 trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with RegisteredSupport{
 
-  post("/questions/save") {
-    contentType = formats("json")
-    authenticate()
-
-    val userId = user.userAccountId
-
-    val questionRequest = parsedBody.extract[QuestionCreateObject]
-
-    if(registered()){
-      Question.save(questionRequest.toRow(userId)).map(q => Question.toJson(userId, q))
-    } else {
-      throw new AuthenticationException("Not registered")
-    }
-  }
-
   get("/questions/:questionId") {
     contentType = formats("json")
     authenticate()
@@ -68,6 +53,21 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
     }
   }
 
+  post("/questions/save") {
+    contentType = formats("json")
+    authenticate()
+
+    val userId = user.userAccountId
+
+    val questionRequest = parsedBody.extract[QuestionCreateObject]
+
+    if(registered()){
+      Question.save(questionRequest.toRow(userId)).map(q => Question.toJson(userId, q))
+    } else {
+      throw new AuthenticationException("Not registered")
+    }
+  }
+
   post("/answers/save") {
     contentType = formats("json")
     authenticate()
@@ -108,6 +108,21 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
 
     if(registered()){
       Review.save(reviewRequest.toRow(userId)).map(Review.toJson)
+    } else {
+      throw new AuthenticationException("Not registered")
+    }
+  }
+
+  post("/views/create") {
+    contentType = formats("json")
+    authenticate()
+
+    val userId = user.userAccountId
+
+    val viewRequest = parsedBody.extract[QuestionViewCreateObject]
+
+    if(registered()) {
+      QuestionView.create(viewRequest.toRow(userId))
     } else {
       throw new AuthenticationException("Not registered")
     }

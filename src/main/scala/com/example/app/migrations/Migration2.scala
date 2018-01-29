@@ -8,14 +8,15 @@ object Migration2 extends Migration {
 
   val id = 2
 
-  class Questions(tag: Tag) extends Table[(String, Int, String, Long, Long)](tag, Some(InitDB.SCHEMA_NAME), "QUESTIONS") {
+  class Questions(tag: Tag) extends Table[(String, Int, String, String, Long, Long)](tag, Some(InitDB.SCHEMA_NAME), "QUESTIONS") {
     def id = column[String]("QUESTION_ID", O.PrimaryKey)
     def creatorId = column[Int]("CREATOR_ID")
+    def title = column[String]("QUESTION_TITLE")
     def text = column[String]("QUESTION_TEXT")
     def createdMillis = column[Long]("CREATED_MILLIS")
     def updatedMillis = column[Long]("UPDATED_MILLIS")
 
-    def * = (id, creatorId, text, createdMillis, updatedMillis)
+    def * = (id, creatorId, title, text, createdMillis, updatedMillis)
 
     def creator = foreignKey("QUESTION_TO_USERS_FK", creatorId, Tables.UserAccounts)(_.userAccountId)
   }

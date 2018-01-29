@@ -2,7 +2,7 @@ import { Map, List, is } from 'immutable';
 import Immutable from 'immutable';
 import { getSession, setSession } from './utilities';
 import {
-  SIGNUP_EMAIL_CHANGED, SIGNUP_PASSWORD_CHANGED, SIGNUP_CLEAR_INPUTS,
+  SIGNUP_EMAIL_CHANGED, SIGNUP_USERNAME_CHANGED, SIGNUP_PASSWORD_CHANGED, SIGNUP_CLEAR_INPUTS,
   LOGIN_EMAIL_CHANGED, LOGIN_PASSWORD_CHANGED, LOGIN_CLEAR_INPUTS
 } from './actions.js';
 
@@ -18,8 +18,17 @@ function cleanState() {
     logout: Map({error: null, loading: false}),
     signupEmail: Map({ email: '' }),
     signupPassword: Map({ password: '' }),
+    signupUsername: Map({ username: ''}),
     loginEmail: Map({ email: '' }),
-    loginPassword: Map({ password: '' })
+    loginPassword: Map({ password: '' }),
+    getQuestion: Map({question: null, loading: false, error: null}),
+    getQuestionFeed: Map({feed: List.of(), loading: false, error: null}),
+    getCreatedQuestionFeed: Map({feed: List.of(), loading: false, error: null}),
+    saveQuestion: Map({question: null, loading: false, error: null}),
+    saveAnswer: Map({answer: null, loading: false, error: null}),
+    saveComment: Map({comment: null, loading: false, error: null}),
+    saveReview: Map({review: null, loading: false, error: null}),
+    createQuestionView: Map({loading: false, error: null})
   });
 
   return cleanState;
@@ -64,6 +73,10 @@ function logoutError(state, error) {
   return state.set('logout', Map({error: error, loading: false}));
 }
 
+function signupUsernameChanged(state, username) {
+  return state.set('signupUsername', Map({ username: username }));
+}
+
 function signupEmailChanged(state, email) {
   return state.set('signupEmail', Map({ email: email }));
 }
@@ -90,6 +103,102 @@ function loginClearInputs(state) {
   return newState.set('loginPassword', Map({ password: '' }));
 }
 
+function getQuestion(state) {
+  return state.set('getQuestion', Map({question: null, loading: true, error: null}));
+}
+
+function getQuestionSuccess(state, question) {
+  return state.set('getQuestion', Map({question: Immutable.fromJS(question), loading: false, error: null}));
+}
+
+function getQuestionError(state, error) {
+  return state.set('getQuestion', Map({question: null, loading: false, error: error}));
+}
+
+function getQuestionFeed(state) {
+  return state.set('getQuestionFeed', Map({feed: List.of(), loading: true, error: null}));
+}
+
+function getQuestionFeedSuccess(state, questions) {
+  return state.set('getQuestionFeed', Map({feed: Immutable.fromJS(questions), loading: false, error: null}));
+}
+
+function getQuestionFeedError(state, error) {
+  return state.set('getQuestionFeed', Map({feed: List.of(), loading: false, error: error}));
+}
+
+function getCreatedQuestionFeed(state) {
+  return state.set('getCreatedQuestionFeed', Map({feed: List.of(), loading: true, error: null}));
+}
+
+function getCreatedQuestionFeedSuccess(state, questions) {
+  return state.set('getCreatedQuestionFeed', Map({feed: Immutable.fromJS(questions), loading: false, error: null}));
+}
+
+function getCreatedQuestionFeedError(state, error) {
+  return state.set('getCreatedQuestionFeed', Map({feed: List.of(), loading: false, error: error}));
+}
+
+function saveQuestion(state) {
+  return state.set('saveQuestion', Map({question: null, loading: true, error: null}));
+}
+
+function saveQuestionSuccess(state, question) {
+  return state.set('saveQuestion', Map({question: Immutable.fromJS(question), loading: false, error: null}));
+}
+
+function saveQuestionError(state, error) {
+  return state.set('saveQuestion', Map({question: null, loading: false, error: error}));
+}
+
+function saveAnswer(state) {
+  return state.set('saveAnswer', Map({answer: null, loading: true, error: null}));
+}
+
+function saveAnswerSuccess(state, answer) {
+  return state.set('saveAnswer', Map({answer: Immutable.fromJS(answer), loading: false, error: null}));
+}
+
+function saveAnswerError(state, error) {
+  return state.set('saveAnswer', Map({answer: null, loading: false, error: error}));
+}
+
+function saveComment(state) {
+  return state.set('saveComment', Map({comment: null, loading: true, error: null}));
+}
+
+function saveCommentSuccess(state, comment) {
+  return state.set('saveComment', Map({comment: Immutable.fromJS(comment), loading: false, error: null}));
+}
+
+function saveCommentError(state, error){
+  return state.set('saveComment', Map({comment: null, loading: false, error: error}));
+}
+
+function saveReview(state) {
+  return state.set('saveReview', Map({review: null, loading: true, error: null}));
+}
+
+function saveReviewSuccess(state, review) {
+  return state.set('saveReview', Map({review: Immutable.fromJS(review), loading: false, error: null}));
+}
+
+function saveReviewError(state, error) {
+  return state.set('saveReview', Map({review: null, loading: false, error: error}));
+}
+
+function createQuestionView(state) {
+  return state.set('createQuestionView', Map({loading: true, error: null}));
+}
+
+function createQuestionViewSuccess(state, view) {
+  return state.set('createQuestionView', Map({loading: false, error: null}));
+}
+
+function createQuestionViewError(state, error) {
+  return state.set('createQuestionView', Map({loading: false, error: error}));
+}
+
 export default function reducer(state = Map(), action) {
   switch (action.type) {
     case 'CLEAN_STATE':
@@ -112,6 +221,8 @@ export default function reducer(state = Map(), action) {
       return logoutSuccess(state, action.payload);
     case 'LOGOUT_ERROR':
       return logoutError(state, action.error);
+    case SIGNUP_USERNAME_CHANGED:
+      return signupUsernameChanged(state, action.username);
     case SIGNUP_EMAIL_CHANGED:
       return signupEmailChanged(state, action.email);
     case SIGNUP_PASSWORD_CHANGED:
@@ -124,6 +235,54 @@ export default function reducer(state = Map(), action) {
       return loginPasswordChanged(state, action.password);
     case LOGIN_CLEAR_INPUTS:
       return loginClearInputs(state);
+    case 'GET_QUESTION':
+      return getQuestion(state);
+    case 'GET_QUESTION_SUCCESS':
+      return getQuestionSuccess(state, action.payload);
+    case 'GET_QUESTION_ERROR':
+      return getQuestionError(state, action.error);
+    case 'GET_QUESTION_FEED':
+      return getQuestionFeed(state);
+    case 'GET_QUESTION_FEED_SUCCESS':
+      return getQuestionFeedSuccess(state, action.payload);
+    case 'GET_QUESTION_FEED_ERROR':
+      return getQuestionFeedError(state, action.error);
+    case 'GET_CREATED_QUESTION_FEED':
+      return getCreatedQuestionFeed(state);
+    case 'GET_CREATED_QUESTION_FEED_SUCCESS':
+      return getCreatedQuestionFeedSuccess(state, action.payload);
+    case 'GET_CREATED_QUESTION_FEED_ERROR':
+      return getCreatedQuestionFeedError(state, action.error);
+    case 'SAVE_QUESTION':
+      return saveQuestion(state);
+    case 'SAVE_QUESTION_SUCCESS':
+      return saveQuestionSuccess(state, action.payload);
+    case 'SAVE_QUESTION_ERROR':
+      return saveQuestionError(state, action.error);
+    case 'SAVE_ANSWER':
+      return saveAnswer(state);
+    case 'SAVE_ANSWER_SUCCESS':
+      return saveAnswerSuccess(state, action.payload);
+    case 'SAVE_ANSWER_ERROR':
+      return saveAnswerError(state, action.error);
+    case 'SAVE_COMMENT':
+      return saveComment(state);
+    case 'SAVE_COMMENT_SUCCESS':
+      return saveCommentSuccess(state, action.payload);
+    case 'SAVE_COMMENT_ERROR':
+      return saveCommentError(state, action.error);
+    case 'SAVE_REVIEW':
+      return saveReview(state);
+    case 'SAVE_REVIEW_SUCCESS':
+      return saveReviewSuccess(state, action.payload);
+    case 'SAVE_REVIEW_ERROR':
+      return saveReviewError(state, action.error);
+    case 'CREATE_QUESTION_VIEW':
+      return createQuestionView(state);
+    case 'CREATE_QUESTION_VIEW_SUCCESS':
+      return createQuestionViewSuccess(state, action.payload);
+    case 'CREATE_QUESTION_VIEW_ERROR':
+      return createQuestionViewError()
     default:
       return state;
   }

@@ -82,10 +82,15 @@ object User extends UpdatableDBObject[UserAccountsRow, UserAccounts]{
   def uniqueEmail(email: String) =
     db.run(table.filter(_.email.toLowerCase === email.toLowerCase).result).map(_.isEmpty)
 
+  def uniqueUserName(username: String) =
+    db.run(table.filter(_.username.toLowerCase === username.toLowerCase).result).map(_.isEmpty)
+
   def createNewUser(userCreate: UserCreate) = {
     val emailIsUnique = Await.result(uniqueEmail(userCreate.email), Duration.Inf)
 
-    if(emailIsUnique)
+    val usernameIsUnique = Await.result(uniqueUserName(userCreate.username), Duration.Inf)
+
+    if(emailIsUnique && usernameIsUnique)
       create(userCreate.makeUser)
     else
       throw new Exception("Must provide unique email")
