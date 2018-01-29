@@ -50,7 +50,7 @@ class NewComment extends React.Component {
         <Form horizontal>
             <FormGroup bsSize="small" className="col-md-10">
                 <Col md={2}>
-                    <ControlLabel><b>Matt</b></ControlLabel>{' '}
+                    <ControlLabel><b>{this.props.getSelf.getIn(['user', 'username'])}</b></ControlLabel>{' '}
                 </Col>
                 <Col md={10}>
                     <FormControl onChange={this.changeText} value={text} componentClass="textarea" placeholder="Add a comment..." />
@@ -66,7 +66,8 @@ class NewComment extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    questionFeed: state.get('getQuestionFeed')
+    questionFeed: state.get('getQuestionFeed'),
+    getSelf: state.get('getSelf')
   };
 };
 

@@ -42,29 +42,37 @@ class FullQuestion extends React.Component {
 
     const refresh = () => this.props.getQuestion(questionId)
 
+    const question = this.props.question
+
+    var actionBox = null
+
+    if(this.props.question.getIn(['question', 'question', 'isCreator'])) {
+        actionBox = <div className="action-box">
+                        <Link to={"/question/"+questionId+"/edit"}>edit</Link>
+                    </div>
+    }
+
     return (
       <div >
         <NavBar inverse={false} />
         <Grid>
-            <h3 className="m-b-3">{this.props.question.getIn(['question', 'question', 'title'], '')}</h3>
+            <h3 className="m-b-3">{question.getIn(['question', 'question', 'title'], '')}</h3>
             <div>
                 <div className="col-md-1">
-                    <InfoBox major={this.props.question.getIn(['question', 'viewCount'], 0)} minor={"views"} />
+                    <InfoBox major={question.getIn(['question', 'viewCount'], 0)} minor={"views"} />
                 </div>
                 <div className="col-md-11">
                     <div className="question-body">
                         <p>
-                            {this.props.question.getIn(['question', 'question', 'text'], '')}
+                            {question.getIn(['question', 'question', 'text'], '')}
                         </p>
                     </div>
-                    <div className="action-box">
-                        <Link to={"/question/"+questionId+"/edit"}>edit</Link>
-                    </div>
+                    {actionBox}
                     <div className="poster-box">
-                        <p>Last updated by <b>matt</b> on {new Date(this.props.question.getIn(['question', 'question', 'updatedMillis'], 0)).toDateString()}</p>
+                        <p>Last updated by <b>{question.getIn(['question', 'question', 'creatorName'])}</b> on {new Date(question.getIn(['question', 'question', 'updatedMillis'], 0)).toDateString()}</p>
                     </div>
                     <div className="comments">
-                        <CommentsListContainer comments={this.props.question.getIn(['question', 'comments'], List.of())} refresh={refresh} questionId={questionId} />
+                        <CommentsListContainer comments={question.getIn(['question', 'comments'], List.of())} refresh={refresh} questionId={questionId} />
                     </div>
                 </div>
             </div>

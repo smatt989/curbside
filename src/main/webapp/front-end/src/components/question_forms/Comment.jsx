@@ -14,7 +14,7 @@ import {
 const Comment = ({ comment }) => {
   return (
             <ListGroupItem>
-                <div><b>Matt</b> on {new Date(comment.get('updatedMillis')).toDateString()}</div>
+                <div><b>{comment.get('creatorName')}</b> on {new Date(comment.get('updatedMillis')).toDateString()}</div>
                 <p>{comment.get('text')}</p>
             </ListGroupItem>
   );

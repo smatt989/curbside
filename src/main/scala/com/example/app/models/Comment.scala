@@ -5,7 +5,10 @@ import com.example.app.db.Tables.{Comments, CommentsRow}
 import com.example.app.AppGlobals
 import AppGlobals.dbConfig.driver.api._
 import org.joda.time.DateTime
+
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
 
 /**
   * Created by matt on 1/26/18.
@@ -32,8 +35,21 @@ object Comment extends UpdatableUUIDObject[CommentsRow, Comments]{
   def byQuestionIds(questionIds: Seq[String]) =
     db.run(table.filter(_.questionId inSet questionIds).result)
 
-  def toJson(userId: Int, comment: CommentsRow) =
-    CommentJson(comment.commentId, comment.questionId, comment.answerId, comment.commentText, comment.createdMillis, comment.updatedMillis, userId == comment.creatorId)
+  def toJson(userId: Int, comment: CommentsRow, creatorName: String) =
+    CommentJson(comment.commentId, comment.questionId, comment.answerId, comment.commentText, comment.createdMillis, comment.updatedMillis, userId == comment.creatorId, creatorName)
+
+  def manyToJson(userId: Int, comments: Seq[CommentsRow]) = {
+    val users = Await.result(User.byIds(comments.map(_.creatorId).distinct), Duration.Inf)
+    val usersById = users.map(u => u.userAccountId -> u.username).toMap
+    comments.map(q => toJson(userId, q, usersById(q.creatorId)))
+  }
+
+  def authorizedToEditComment(commentCreateObject: CommentCreateObject, userId: Int) = {
+    if(commentCreateObject.id.isDefined){
+      Await.result(byId(commentCreateObject.id.get), Duration.Inf).creatorId == userId
+    } else
+      true
+  }
 }
 
 case class CommentCreateObject(id: Option[String], questionId: Option[String], answerId: Option[String], text: String) {
@@ -43,4 +59,4 @@ case class CommentCreateObject(id: Option[String], questionId: Option[String], a
   }
 }
 
-case class CommentJson(id: String, questionId: Option[String], answerId: Option[String], text: String, createdMillis: Long, updatedMillis: Long, creator: Boolean)
+case class CommentJson(id: String, questionId: Option[String], answerId: Option[String], text: String, createdMillis: Long, updatedMillis: Long, isCreator: Boolean, creatorName: String)

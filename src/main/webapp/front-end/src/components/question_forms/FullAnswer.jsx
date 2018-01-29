@@ -37,6 +37,14 @@ class FullAnswer extends React.Component {
 
     const refresh = this.props.refresh
 
+    var actionBox = null
+
+    if(answer.getIn(['answer', 'isCreator'])) {
+        actionBox = <div className="action-box">
+                        <Link to={"/question/"+this.props.questionId+"/answers/"+answerId}>edit</Link>
+                    </div>
+    }
+
     return (
         <div>
         <ListGroupItem>
@@ -50,11 +58,9 @@ class FullAnswer extends React.Component {
                             {answer.getIn(['answer', 'text'])}
                         </p>
                     </div>
-                    <div className="action-box">
-                        <Link to={"/question/"+this.props.questionId+"/answers/"+answerId}>edit</Link>
-                    </div>
+                    {actionBox}
                     <div className="poster-box">
-                        <p>Answered by <b>matt</b> on {new Date(answer.getIn(['answer', 'updatedMillis'])).toDateString()}</p>
+                        <p>Answered by <b>{answer.getIn(['answer', 'creatorName'])}</b> on {new Date(answer.getIn(['answer', 'updatedMillis'])).toDateString()}</p>
                     </div>
                     <div className="comments">
                         <CommentsListContainer comments={answer.get('comments', List.of())} refresh={refresh} answerId={answerId} />

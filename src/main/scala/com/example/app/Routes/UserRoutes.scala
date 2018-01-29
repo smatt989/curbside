@@ -26,6 +26,14 @@ trait UserRoutes extends SlickRoutes with AuthenticationSupport{
     User.makeJson(created)
   }
 
+  get("/me") {
+    contentType = formats("json")
+    authenticate()
+
+    val u = user
+    User.makeJson(u)
+  }
+
   get("/register/:code") {
     contentType = formats("json")
 

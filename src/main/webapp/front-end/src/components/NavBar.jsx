@@ -1,10 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { logout, logoutError, logoutSuccess } from '../actions.js';
+import { logout, logoutError, logoutSuccess, getSelf, getSelfSuccess, getSelfError } from '../actions.js';
 import { Navbar, NavItem, Nav } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import BeeLabel from './BeeLabel.jsx';
+import { dispatchPattern } from '../utilities.js';
 
 const NavRight = (props) => {
   return props.session != null
@@ -23,6 +24,11 @@ const NavRight = (props) => {
 };
 
 class NavBar extends React.Component {
+
+  componentDidMount() {
+    this.props.getSelf()
+  }
+
   render() {
     const { inverse } = this.props;
     const props = inverse ? {inverse: inverse } : {};
@@ -46,6 +52,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = (dispatch, ownProps) => {
   return {
+    getSelf: dispatchPattern( getSelf, getSelfSuccess, getSelfError ),
     logout: (session) => {
       return dispatch(logout(session))
         .then(response => {

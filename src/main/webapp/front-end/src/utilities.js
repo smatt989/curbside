@@ -20,7 +20,7 @@ export function setSession(session) {
 
 export function authenticate() {
   var authentication = {};
-  authentication[authenticationHeader] = Cookies.get(cookieName);
+  authentication[authenticationHeader] = getSession();
   return authentication;
 }
 

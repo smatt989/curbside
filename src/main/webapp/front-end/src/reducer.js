@@ -28,7 +28,8 @@ function cleanState() {
     saveAnswer: Map({answer: null, loading: false, error: null}),
     saveComment: Map({comment: null, loading: false, error: null}),
     saveReview: Map({review: null, loading: false, error: null}),
-    createQuestionView: Map({loading: false, error: null})
+    createQuestionView: Map({loading: false, error: null}),
+    getSelf: Map({user: null, loading: false, error: null})
   });
 
   return cleanState;
@@ -199,6 +200,18 @@ function createQuestionViewError(state, error) {
   return state.set('createQuestionView', Map({loading: false, error: error}));
 }
 
+function getSelf(state) {
+  return state.set('getSelf', Map({user: null, loading: true, error: null}));
+}
+
+function getSelfSuccess(state, user) {
+  return state.set('getSelf', Map({user: Immutable.fromJS(user), loading: false, error: null}));
+}
+
+function getSelfError(state, error) {
+  return state.set('getSelf', Map({user: null, loading: false, error: error}));
+}
+
 export default function reducer(state = Map(), action) {
   switch (action.type) {
     case 'CLEAN_STATE':
@@ -282,7 +295,13 @@ export default function reducer(state = Map(), action) {
     case 'CREATE_QUESTION_VIEW_SUCCESS':
       return createQuestionViewSuccess(state, action.payload);
     case 'CREATE_QUESTION_VIEW_ERROR':
-      return createQuestionViewError()
+      return createQuestionViewError(state, action.error);
+    case 'GET_SELF':
+      return getSelf(state);
+    case 'GET_SELF_SUCCESS':
+      return getSelfSuccess(state, action.payload);
+    case 'GET_SELF_ERROR':
+      return getSelfError(state, action.error);
     default:
       return state;
   }

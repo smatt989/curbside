@@ -410,3 +410,32 @@ export function createQuestionViewError(error) {
     error: error
   };
 }
+
+export function getSelf() {
+
+  const request = axios({
+    method: 'get',
+    url: `${domain}/me`,
+    headers: authenticate()
+  });
+
+  return {
+    type: 'GET_SELF',
+    payload: request
+  };
+
+}
+
+export function getSelfSuccess(loaded) {
+  return {
+    type: 'GET_SELF_SUCCESS',
+    payload: loaded
+  };
+}
+
+export function getSelfError(error) {
+  return {
+    type: 'GET_SELF_ERROR',
+    error: error
+  };
+}
