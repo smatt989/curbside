@@ -37,7 +37,7 @@ class Register extends React.Component {
     const { from } = this.props.location.state || { from: { pathname: '/' } }
 
     if (this.state.redirectToReferrer) {
-      return <Redirect to={'/tasks'} />;
+      return <Redirect to={'/feed'} />;
     }
 
     return (

@@ -47,7 +47,7 @@ class FullAnswer extends React.Component {
 
     return (
         <div>
-        <ListGroupItem>
+        <ListGroupItem className="answer-item">
 
                 <div className="col-md-1">
                     <PointsBox major={answer.get('score')} minor={"views"} saveReview={this.props.saveReview} answerId={answerId} />
@@ -60,7 +60,7 @@ class FullAnswer extends React.Component {
                     </div>
                     {actionBox}
                     <div className="poster-box">
-                        <p>Answered by <b>{answer.getIn(['answer', 'creatorName'])}</b> on {new Date(answer.getIn(['answer', 'updatedMillis'])).toDateString()}</p>
+                        <p className="info-text">Answered by <b>{answer.getIn(['answer', 'creatorName'])}</b> on {new Date(answer.getIn(['answer', 'updatedMillis'])).toDateString()}</p>
                     </div>
                     <div className="comments">
                         <CommentsListContainer comments={answer.get('comments', List.of())} refresh={refresh} answerId={answerId} />

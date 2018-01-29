@@ -61,6 +61,7 @@ class NewQuestion extends React.Component {
     var disabled = this.state.title.length < 5
 
     var saveText = this.state.id ? "Save Changes" : "Submit Question"
+    var headerText = this.state.id ? "Edit Question" : "New Question"
 
     if(this.state.successfulSave){
         console.log()
@@ -71,7 +72,7 @@ class NewQuestion extends React.Component {
       <div >
         <NavBar inverse={false} />
         <Grid>
-            <h3>New Question:</h3>
+            <h3>{headerText}:</h3>
             <div>
                 <Form horizontal className="col-md-8 col-md-push-2">
                   <FormGroup>

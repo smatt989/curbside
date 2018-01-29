@@ -13,8 +13,8 @@ import {
 
 const Comment = ({ comment }) => {
   return (
-            <ListGroupItem>
-                <div><b>{comment.get('creatorName')}</b> on {new Date(comment.get('updatedMillis')).toDateString()}</div>
+            <ListGroupItem className="comment-item">
+                <div className="info-text"><b>{comment.get('creatorName')}</b> on {new Date(comment.get('updatedMillis')).toDateString()}</div>
                 <p>{comment.get('text')}</p>
             </ListGroupItem>
   );

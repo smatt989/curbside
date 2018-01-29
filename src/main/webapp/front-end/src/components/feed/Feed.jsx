@@ -16,13 +16,39 @@ class Feed extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      page: 0
+      page: 0,
+      loading: false
     };
+
+    this.getNextFeed = this.getNextFeed.bind(this);
+    this.handleOnScroll = this.handleOnScroll.bind(this);
   }
 
   componentDidMount() {
-    this.props.getQuestionFeed(this.state.page)
-    this.setState({page: this.state.page + 1})
+     this.getNextFeed()
+     window.addEventListener('scroll', this.handleOnScroll);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleOnScroll);
+  }
+
+  getNextFeed() {
+     const feed = this.props.questionFeed.get('feed')
+
+     if((feed.size == 0 || feed.last().size > 0) && !this.state.loading){
+        const page = this.state.page
+        this.setState({loading: true, page: page + 1})
+        this.props.getQuestionFeed(() => this.setState({loading: false}))(page)
+     }
+  }
+
+  handleOnScroll() {
+    var scrolledToBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight;
+
+    if (scrolledToBottom) {
+      this.getNextFeed();
+    }
   }
 
   render() {
@@ -36,7 +62,7 @@ class Feed extends React.Component {
             <Link to="/questions/new"><Button className="col-md-2 col-md-push-4" bsStyle="success">New Question</Button></Link>
             <div className="col-md-12">
                 <ListGroup componentClass="ul">
-                    {this.props.questionFeed.get('feed').map(q => <Question question={q} />)}
+                    {this.props.questionFeed.get('feed').map(qs => qs.map(q => <Question question={q} />))}
                 </ListGroup>
             </div>
         </Grid>
@@ -53,8 +79,11 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = (dispatch, ownProps) => {
+
+  const getQuestionFeedWithCallback = (callback) => dispatchPattern(getQuestionFeed, getQuestionFeedSuccess, getQuestionFeedError, callback)
+
   return {
-    getQuestionFeed: dispatchPattern(getQuestionFeed, getQuestionFeedSuccess, getQuestionFeedError)
+    getQuestionFeed: getQuestionFeedWithCallback
   };
 };
 

@@ -69,7 +69,7 @@ class FullQuestion extends React.Component {
                     </div>
                     {actionBox}
                     <div className="poster-box">
-                        <p>Last updated by <b>{question.getIn(['question', 'question', 'creatorName'])}</b> on {new Date(question.getIn(['question', 'question', 'updatedMillis'], 0)).toDateString()}</p>
+                        <p className="info-text">Last updated by <b>{question.getIn(['question', 'question', 'creatorName'])}</b> on {new Date(question.getIn(['question', 'question', 'updatedMillis'], 0)).toDateString()}</p>
                     </div>
                     <div className="comments">
                         <CommentsListContainer comments={question.getIn(['question', 'comments'], List.of())} refresh={refresh} questionId={questionId} />

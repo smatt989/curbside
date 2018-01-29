@@ -117,11 +117,13 @@ function getQuestionError(state, error) {
 }
 
 function getQuestionFeed(state) {
-  return state.set('getQuestionFeed', Map({feed: List.of(), loading: true, error: null}));
+  const currentFeed = state.getIn(['getQuestionFeed', 'feed'])
+  return state.set('getQuestionFeed', Map({feed: currentFeed, loading: true, error: null}));
 }
 
 function getQuestionFeedSuccess(state, questions) {
-  return state.set('getQuestionFeed', Map({feed: Immutable.fromJS(questions), loading: false, error: null}));
+  const currentFeed = state.getIn(['getQuestionFeed', 'feed'])
+  return state.set('getQuestionFeed', Map({feed: currentFeed.push(Immutable.fromJS(questions)), loading: false, error: null}));
 }
 
 function getQuestionFeedError(state, error) {
