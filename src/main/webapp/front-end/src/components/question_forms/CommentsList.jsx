@@ -6,7 +6,7 @@ import {
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
-import { getQuestionFeed, getQuestionFeedSuccess, getQuestionFeedError } from '../../actions.js';
+import { getQuestionFeed, getQuestionFeedSuccess, getQuestionFeedError, deleteComment, deleteCommentSuccess, deleteCommentError } from '../../actions.js';
 import { tryLogin, dispatchPattern } from '../../utilities.js';
 import NewCommentContainer from './NewComment.jsx';
 import Comment from './Comment.jsx';
@@ -26,6 +26,8 @@ class CommentsList extends React.Component {
 
     var newComment = <Link onClick={() => this.setState({addComment: true})} to="#">Add comment</Link>
 
+    const deleteComment = this.props.deleteComment(refresh)
+
     if(this.state.addComment){
         newComment = <NewCommentContainer questionId={this.props.questionId} answerId={this.props.answerId} refresh={refresh} />
     }
@@ -33,7 +35,7 @@ class CommentsList extends React.Component {
     return (
       <div >
         <ListGroup componentClass="ul">
-            {comments.map(c => <Comment comment={c} />)}
+            {comments.map(c => <Comment comment={c} key={c.get('id')} deleteComment={deleteComment} />)}
         </ListGroup>
         <div>
             {newComment}
@@ -51,8 +53,11 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = (dispatch, ownProps) => {
-  return {
 
+  const deleteCommentWithCallback = (callback) => dispatchPattern(deleteComment, deleteCommentSuccess, deleteCommentError, callback)
+
+  return {
+    deleteComment: deleteCommentWithCallback
   };
 };
 

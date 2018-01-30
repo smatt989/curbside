@@ -439,3 +439,128 @@ export function getSelfError(error) {
     error: error
   };
 }
+
+export function deleteQuestion(questionId) {
+
+  const obj = {id: questionId}
+
+  const request = axios({
+    method: 'post',
+    url: `${domain}/questions/delete`,
+    headers: authenticate(),
+    data: obj
+  });
+
+  return {
+    type: 'DELETE_QUESTION',
+    payload: request
+  };
+
+}
+
+export function deleteQuestionSuccess(loaded) {
+  return {
+    type: 'DELETE_QUESTION_SUCCESS',
+    payload: loaded
+  };
+}
+
+export function deleteQuestionError(error) {
+  return {
+    type: 'DELETE_QUESTION_ERROR',
+    error: error
+  };
+}
+
+export function deleteAnswer(answerId) {
+
+  const obj = {id: answerId}
+
+  const request = axios({
+    method: 'post',
+    url: `${domain}/answers/delete`,
+    headers: authenticate(),
+    data: obj
+  });
+
+  return {
+    type: 'DELETE_ANSWER',
+    payload: request
+  };
+
+}
+
+export function deleteAnswerSuccess(loaded) {
+  return {
+    type: 'DELETE_ANSWER_SUCCESS',
+    payload: loaded
+  };
+}
+
+export function deleteAnswerError(error) {
+  return {
+    type: 'DELETE_ANSWER_ERROR',
+    error: error
+  };
+}
+
+export function deleteComment(commentId) {
+
+  const obj = {id: commentId}
+
+  const request = axios({
+    method: 'post',
+    url: `${domain}/comments/delete`,
+    headers: authenticate(),
+    data: obj
+  });
+
+  return {
+    type: 'DELETE_COMMENT',
+    payload: request
+  };
+
+}
+
+export function deleteCommentSuccess(loaded) {
+  return {
+    type: 'DELETE_COMMENT_SUCCESS',
+    payload: loaded
+  };
+}
+
+export function deleteCommentError(error) {
+  return {
+    type: 'DELETE_COMMENT_ERROR',
+    error: error
+  };
+}
+
+export function questionSearch(query) {
+
+  const request = axios({
+    method: 'get',
+    url: `${domain}/questions/search/${query}`,
+    headers: authenticate()
+  });
+
+  return {
+    type: 'QUESTION_SEARCH',
+    payload: request
+  };
+
+}
+
+export function questionSearchSuccess(loaded) {
+  return {
+    type: 'QUESTION_SEARCH_SUCCESS',
+    payload: loaded
+  };
+}
+
+export function questionSearchError(error) {
+  return {
+    type: 'QUESTION_SEARCH_ERROR',
+    error: error
+  };
+}

@@ -43,7 +43,6 @@ class NewAnswer extends React.Component {
     const questionId = this.props.questionId
 
     if(this.state.successfulSave){
-        console.log('hmm');
         return <Redirect to={'/question/'+questionId} />
     }
 
@@ -57,7 +56,7 @@ class NewAnswer extends React.Component {
 
     return (
       <div>
-        <h3>Your Answer:</h3>
+        <h4>Your Answer:</h4>
         <Form horizontal>
             <FormGroup>
                 <FormControl onChange={this.changeText} value={text} componentClass="textarea" placeholder="Start your answer..." />

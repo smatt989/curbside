@@ -23,13 +23,18 @@ function cleanState() {
     loginPassword: Map({ password: '' }),
     getQuestion: Map({question: null, loading: false, error: null}),
     getQuestionFeed: Map({feed: List.of(), loading: false, error: null}),
+    questionFeed: Map({feed: List.of(), currentPage: 0, lastResponseSize: null}),
     getCreatedQuestionFeed: Map({feed: List.of(), loading: false, error: null}),
     saveQuestion: Map({question: null, loading: false, error: null}),
     saveAnswer: Map({answer: null, loading: false, error: null}),
     saveComment: Map({comment: null, loading: false, error: null}),
     saveReview: Map({review: null, loading: false, error: null}),
     createQuestionView: Map({loading: false, error: null}),
-    getSelf: Map({user: null, loading: false, error: null})
+    getSelf: Map({user: null, loading: false, error: null}),
+    deleteQuestion: Map({loading: false, error: null}),
+    deleteAnswer: Map({loading: false, error: null}),
+    deleteComment: Map({loading: false, error: null}),
+    questionSearch: Map({results: List.of(), loading: false, error: null})
   });
 
   return cleanState;
@@ -109,7 +114,10 @@ function getQuestion(state) {
 }
 
 function getQuestionSuccess(state, question) {
-  return state.set('getQuestion', Map({question: Immutable.fromJS(question), loading: false, error: null}));
+  const q = Immutable.fromJS(question)
+
+  const newState = state.set('getQuestion', Map({question: q, loading: false, error: null}));
+  return addQuestionToFeed(newState, q)
 }
 
 function getQuestionError(state, error) {
@@ -122,8 +130,12 @@ function getQuestionFeed(state) {
 }
 
 function getQuestionFeedSuccess(state, questions) {
-  const currentFeed = state.getIn(['getQuestionFeed', 'feed'])
-  return state.set('getQuestionFeed', Map({feed: currentFeed.push(Immutable.fromJS(questions)), loading: false, error: null}));
+
+  const qs = Immutable.fromJS(questions)
+
+  const newState = state.set('getQuestionFeed', Map({feed: qs, loading: false, error: null}));
+
+  return newState.set('questionFeed', Map({feed: newState.getIn(['questionFeed', 'feed']).concat(qs), currentPage: newState.getIn(['questionFeed', 'currentPage'], 0) + 1, lastResponseSize: qs.size}))
 }
 
 function getQuestionFeedError(state, error) {
@@ -140,6 +152,26 @@ function getCreatedQuestionFeedSuccess(state, questions) {
 
 function getCreatedQuestionFeedError(state, error) {
   return state.set('getCreatedQuestionFeed', Map({feed: List.of(), loading: false, error: error}));
+}
+
+function addQuestionToFeed(state, question) {
+    const questionId = question.getIn(['question', 'id'])
+
+    const feed = state.getIn(['questionFeed', 'feed'])
+
+    const questionIndex = feed.findIndex(a => a.getIn(['question', 'id']) == questionId)
+
+    if(questionIndex >= 0) {
+        return state.setIn(['questionFeed', 'feed'], feed.update(questionIndex, (a) => question))
+    } else {
+        return state.setIn(['questionFeed', 'feed'], feed.unshift(question))
+    }
+}
+
+function removeQuestionFromFeed(state, questionId) {
+    const feed = state.getIn(['questionFeed', 'feed'])
+    const questionIndex = feed.findIndex(a => a.getIn(['question', 'id']) == questionId)
+    return state.setIn(['questionFeed', 'feed'], feed.delete(questionIndex))
 }
 
 function saveQuestion(state) {
@@ -212,6 +244,56 @@ function getSelfSuccess(state, user) {
 
 function getSelfError(state, error) {
   return state.set('getSelf', Map({user: null, loading: false, error: error}));
+}
+
+function deleteQuestion(state) {
+  return state.set('deleteQuestion', Map({loading: true, error: null}));
+}
+
+function deleteQuestionSuccess(state, deleteObj){
+  const newState = state.set('deleteQuestion', Map({loading: false, error: null}));
+
+  return removeQuestionFromFeed(newState, deleteObj.id)
+}
+
+function deleteQuestionError(state, error) {
+  return state.set('deleteQuestion', Map({loading: false, error: error}));
+}
+
+function deleteAnswer(state) {
+  return state.set('deleteAnswer', Map({loading: true, error: null}));
+}
+
+function deleteAnswerSuccess(state){
+  return state.set('deleteAnswer', Map({loading: false, error: null}));
+}
+
+function deleteAnswerError(state, error) {
+  return state.set('deleteAnswer', Map({loading: false, error: error}));
+}
+
+function deleteComment(state) {
+  return state.set('deleteComment', Map({loading: true, error: null}));
+}
+
+function deleteCommentSuccess(state){
+  return state.set('deleteComment', Map({loading: false, error: null}));
+}
+
+function deleteCommentError(state, error) {
+  return state.set('deleteComment', Map({loading: false, error: error}));
+}
+
+function questionSearch(state){
+  return state.set('questionSearch', Map({results: List.of(), loading: true, error: null}));
+}
+
+function questionSearchSuccess(state, questions) {
+  return state.set('questionSearch', Map({results: Immutable.fromJS(questions), loading: false, error: null}));
+}
+
+function questionSearchError(state, error) {
+  return state.set('questionSearch', Map({results: List.of(), loading: false, error: error}));
 }
 
 export default function reducer(state = Map(), action) {
@@ -304,6 +386,30 @@ export default function reducer(state = Map(), action) {
       return getSelfSuccess(state, action.payload);
     case 'GET_SELF_ERROR':
       return getSelfError(state, action.error);
+    case 'DELETE_QUESTION':
+      return deleteQuestion(state);
+    case 'DELETE_QUESTION_SUCCESS':
+      return deleteQuestionSuccess(state, action.payload);
+    case 'DELETE_QUESTION_ERROR':
+      return deleteQuestionError(state, action.error);
+    case 'DELETE_ANSWER':
+      return deleteAnswer(state);
+    case 'DELETE_ANSWER_SUCCESS':
+      return deleteAnswerSuccess(state);
+    case 'DELETE_ANSWER_ERROR':
+      return deleteAnswerError(state, action.error);
+    case 'DELETE_COMMENT':
+      return deleteComment(state);
+    case 'DELETE_COMMENT_SUCCESS':
+      return deleteCommentSuccess(state);
+    case 'DELETE_COMMENT_ERROR':
+      return deleteCommentError(state, action.error);
+    case 'QUESTION_SEARCH':
+      return questionSearch(state);
+    case 'QUESTION_SEARCH_SUCCESS':
+      return questionSearchSuccess(state, action.payload);
+    case 'QUESTION_SEARCH_ERROR':
+      return questionSearchError(state, action.error);
     default:
       return state;
   }

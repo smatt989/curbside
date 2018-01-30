@@ -33,7 +33,7 @@ object Answer extends UpdatableUUIDObject[AnswersRow, Answers]{
     db.run(table.filter(_.questionId inSet questionIds).result)
 
   def toJson(userId: Int, answer: AnswersRow, creatorName: String) =
-    AnswerJson(answer.answerId, answer.questionId, answer.answerText, answer.createdMillis, answer.updatedMillis, userId == answer.creatorId, creatorName)
+    AnswerJson(answer.answerId, answer.questionId, answer.answerText, answer.createdMillis, answer.updatedMillis, userId == answer.creatorId, creatorName, answer.isActive)
 
   def manyToJson(userId: Int, answers: Seq[AnswersRow]) = {
     val users = Await.result(User.byIds(answers.map(_.creatorId).distinct), Duration.Inf)
@@ -41,19 +41,27 @@ object Answer extends UpdatableUUIDObject[AnswersRow, Answers]{
     answers.map(q => toJson(userId, q, usersById(q.creatorId)))
   }
 
-  def authorizedToEditAnswer(answerCreateObject: AnswerCreateObject, userId: Int) = {
-    if(answerCreateObject.id.isDefined) {
-      Await.result(byId(answerCreateObject.id.get), Duration.Inf).creatorId == userId
-    } else
+  def authorizedToEditAnswer(answerCreateObject: AnswerCreateObject, userId: Int): Boolean = {
+    if(answerCreateObject.id.isDefined)
+      authorizedToEditAnswer(answerCreateObject.id.get, userId)
+    else
       true
   }
+
+  def authorizedToEditAnswer(id: String, userId: Int): Boolean =
+    Await.result(byId(id), Duration.Inf).creatorId == userId
+
+  def toggleActiveStatus(id: String, status: Boolean) =
+    db.run(table.filter(_.answerId === id).map(_.isActive).update(status))
 }
 
 case class AnswerCreateObject(id: Option[String], questionId: String, text: String) {
   def toRow(creatorId: Int) = {
     val now = DateTime.now().getMillis
-    AnswersRow(id.getOrElse(null), questionId, creatorId, text, now, now)
+    AnswersRow(id.getOrElse(null), questionId, creatorId, text, true, now, now)
   }
 }
 
-case class AnswerJson(id: String, questionId: String, text: String, createdMillis: Long, updatedMillis: Long, isCreator: Boolean, creatorName: String)
+case class AnswerDeleteObject(id: String)
+
+case class AnswerJson(id: String, questionId: String, text: String, createdMillis: Long, updatedMillis: Long, isCreator: Boolean, creatorName: String, isActive: Boolean)

@@ -46,7 +46,7 @@ class NewComment extends React.Component {
     const disabled = text.length < 5
 
     return (
-      <div>
+      <div className="new-comment-item">
         <Form horizontal>
             <FormGroup bsSize="small" className="col-md-10">
                 <Col md={2}>

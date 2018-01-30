@@ -3,30 +3,42 @@ import {
   Button,
   ListGroup,
   ListGroupItem,
-  Grid
+  Grid,
+  FormGroup,
+  InputGroup,
+  FormControl
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
-import { getQuestionFeed, getQuestionFeedSuccess, getQuestionFeedError } from '../../actions.js';
+import { getQuestionFeed, getQuestionFeedSuccess, getQuestionFeedError, questionSearch, questionSearchSuccess, questionSearchError } from '../../actions.js';
 import { tryLogin, dispatchPattern } from '../../utilities.js';
 import NavBar from '../NavBar.jsx';
-import Question from './Question.jsx'
+import Question from './Question.jsx';
+import FeedElement from './FeedElement.jsx';
 
 class Feed extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      page: 0,
-      loading: false
+      loading: false,
+      query: '',
+      goToSearch: false
     };
 
     this.getNextFeed = this.getNextFeed.bind(this);
     this.handleOnScroll = this.handleOnScroll.bind(this);
+    this.handleQueryUpdate = this.handleQueryUpdate.bind(this);
+    this.goToSearch = this.goToSearch.bind(this);
+    this.getFeedItems = this.getFeedItems.bind(this);
   }
 
   componentDidMount() {
-     this.getNextFeed()
-     window.addEventListener('scroll', this.handleOnScroll);
+    this.getFeedItems()
+  }
+
+  getFeedItems() {
+    this.getNextFeed()
+    window.addEventListener('scroll', this.handleOnScroll);
   }
 
   componentWillUnmount() {
@@ -36,9 +48,11 @@ class Feed extends React.Component {
   getNextFeed() {
      const feed = this.props.questionFeed.get('feed')
 
-     if((feed.size == 0 || feed.last().size > 0) && !this.state.loading){
-        const page = this.state.page
-        this.setState({loading: true, page: page + 1})
+     const lastResponseSize = this.props.questionFeed.get('lastResponseSize')
+
+     if((lastResponseSize == null ||  lastResponseSize > 0) && !this.state.loading){
+        const page = this.props.questionFeed.get('currentPage')
+        this.setState({loading: true})
         this.props.getQuestionFeed(() => this.setState({loading: false}))(page)
      }
   }
@@ -51,22 +65,27 @@ class Feed extends React.Component {
     }
   }
 
+  handleQueryUpdate(e) {
+    this.setState({query: e.target.value})
+  }
+
+  goToSearch(){
+    if(this.state.query.length > 1){
+        this.setState({goToSearch: true})
+    }
+  }
+
   render() {
+
+    var feed = this.props.questionFeed.get('feed')
+
+    if(this.state.goToSearch){
+        return <Redirect to={"/search/"+this.state.query} />
+    }
 
 
     return (
-      <div >
-        <NavBar inverse={false} />
-        <Grid>
-            <h3 className="col-md-6">Questions:</h3>
-            <Link to="/questions/new"><Button className="col-md-2 col-md-push-4" bsStyle="success">New Question</Button></Link>
-            <div className="col-md-12">
-                <ListGroup componentClass="ul">
-                    {this.props.questionFeed.get('feed').map(qs => qs.map(q => <Question question={q} />))}
-                </ListGroup>
-            </div>
-        </Grid>
-      </div>
+        <FeedElement feed={feed} handleQueryUpdate={this.handleQueryUpdate} queryValue={this.state.query} goToSearch={this.goToSearch}/>
 
     );
   }
@@ -74,7 +93,7 @@ class Feed extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    questionFeed: state.get('getQuestionFeed')
+    questionFeed: state.get('questionFeed')
   };
 };
 

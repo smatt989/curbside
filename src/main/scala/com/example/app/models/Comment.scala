@@ -36,7 +36,7 @@ object Comment extends UpdatableUUIDObject[CommentsRow, Comments]{
     db.run(table.filter(_.questionId inSet questionIds).result)
 
   def toJson(userId: Int, comment: CommentsRow, creatorName: String) =
-    CommentJson(comment.commentId, comment.questionId, comment.answerId, comment.commentText, comment.createdMillis, comment.updatedMillis, userId == comment.creatorId, creatorName)
+    CommentJson(comment.commentId, comment.questionId, comment.answerId, comment.commentText, comment.createdMillis, comment.updatedMillis, userId == comment.creatorId, creatorName, comment.isActive)
 
   def manyToJson(userId: Int, comments: Seq[CommentsRow]) = {
     val users = Await.result(User.byIds(comments.map(_.creatorId).distinct), Duration.Inf)
@@ -44,19 +44,27 @@ object Comment extends UpdatableUUIDObject[CommentsRow, Comments]{
     comments.map(q => toJson(userId, q, usersById(q.creatorId)))
   }
 
-  def authorizedToEditComment(commentCreateObject: CommentCreateObject, userId: Int) = {
-    if(commentCreateObject.id.isDefined){
-      Await.result(byId(commentCreateObject.id.get), Duration.Inf).creatorId == userId
-    } else
+  def authorizedToEditComment(commentCreateObject: CommentCreateObject, userId: Int): Boolean = {
+    if(commentCreateObject.id.isDefined)
+      authorizedToEditComment(commentCreateObject.id.get, userId)
+    else
       true
   }
+
+  def authorizedToEditComment(id: String, userId: Int): Boolean =
+    Await.result(byId(id), Duration.Inf).creatorId == userId
+
+  def toggleActiveStatus(id: String, status: Boolean) =
+    db.run(table.filter(_.commentId === id).map(_.isActive).update(status))
 }
 
 case class CommentCreateObject(id: Option[String], questionId: Option[String], answerId: Option[String], text: String) {
   def toRow(creatorId: Int) = {
     val now = DateTime.now().getMillis
-    CommentsRow(id.getOrElse(null), creatorId, questionId, answerId, text, now, now)
+    CommentsRow(id.getOrElse(null), creatorId, questionId, answerId, text, true, now, now)
   }
 }
 
-case class CommentJson(id: String, questionId: Option[String], answerId: Option[String], text: String, createdMillis: Long, updatedMillis: Long, isCreator: Boolean, creatorName: String)
+case class CommentDeleteObject(id: String)
+
+case class CommentJson(id: String, questionId: Option[String], answerId: Option[String], text: String, createdMillis: Long, updatedMillis: Long, isCreator: Boolean, creatorName: String, isActive: Boolean)

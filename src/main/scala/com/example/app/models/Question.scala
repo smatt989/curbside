@@ -30,7 +30,7 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
     a.questionId
 
   def toJson(userId: Int, question: QuestionsRow, creatorName: String) =
-    QuestionJson(question.questionId, question.questionTitle, question.questionText, question.createdMillis, question.updatedMillis, userId == question.creatorId, creatorName)
+    QuestionJson(question.questionId, question.questionTitle, question.questionText, question.createdMillis, question.updatedMillis, userId == question.creatorId, creatorName, question.isActive)
 
   def manyToJson(userId: Int, questions: Seq[QuestionsRow]) = {
     val users = Await.result(User.byIds(questions.map(_.creatorId).distinct), Duration.Inf)
@@ -40,10 +40,10 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
 
 
   def fullQuestionsFromQuestionRows(questions: Seq[QuestionsRow], userId: Int) = {
-    val answers = Await.result(Answer.byQuestionIds(questions.map(_.questionId)), Duration.Inf)
+    val answers = Await.result(Answer.byQuestionIds(questions.map(_.questionId)), Duration.Inf).filter(_.isActive)
     val reviews = Await.result(Review.byAnswerIds(answers.map(_.answerId)), Duration.Inf)
-    val questionComments = Await.result(Comment.byQuestionIds(questions.map(_.questionId)), Duration.Inf)
-    val answerComments = Await.result(Comment.byAnswerIds(answers.map(_.answerId)), Duration.Inf)
+    val questionComments = Await.result(Comment.byQuestionIds(questions.map(_.questionId)), Duration.Inf).filter(_.isActive)
+    val answerComments = Await.result(Comment.byAnswerIds(answers.map(_.answerId)), Duration.Inf).filter(_.isActive)
 
     val userIds = answers.map(_.creatorId) ++ questions.map(_.creatorId) ++ questionComments.map(_.creatorId) ++ answerComments.map(_.creatorId)
 
@@ -77,7 +77,7 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
 
   def getFullQuestions(userId: Int, page: Int = 0) = {
 
-    val questions = Await.result(db.run(table.sortBy(_.updatedMillis.desc).drop(page * onePage).take(onePage).result), Duration.Inf)
+    val questions = Await.result(db.run(table.filter(_.isActive).sortBy(_.updatedMillis.desc).drop(page * onePage).take(onePage).result), Duration.Inf)
 
     fullQuestionsFromQuestionRows(questions, userId)
   }
@@ -101,23 +101,46 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
     fullQuestionsFromQuestionRows(questions, userId)
   }
 
-  def authorizedToEditQuestion(questionCreateObject: QuestionCreateObject, userId: Int) = {
-    if(questionCreateObject.id.isDefined){
-      Await.result(byId(questionCreateObject.id.get), Duration.Inf).creatorId == userId
-    } else
+  def authorizedToEditQuestion(questionCreateObject: QuestionCreateObject, userId: Int): Boolean = {
+    if(questionCreateObject.id.isDefined)
+      authorizedToEditQuestion(questionCreateObject.id.get, userId)
+    else
       true
   }
 
+  def authorizedToEditQuestion(id: String, userId: Int): Boolean =
+    Await.result(byId(id), Duration.Inf).creatorId == userId
+
+  def toggleActiveStatus(id: String, status: Boolean) =
+    db.run(table.filter(_.questionId === id).map(_.isActive).update(status))
+
+
+  def simpleSearch(query: String, userId: Int) = {
+    val lowerQuery = query.toLowerCase()
+    val tokens = lowerQuery.split(" ")
+
+    val queries = tokens.map(t => (a: Questions) => a.questionTitle.like("%"+t+"%"))
+
+    val uq = queries.tail.foldLeft(queries.head)((a, b) => (q: Questions) => a(q) || b(q))
+
+    val results = Await.result(db.run(table.filter(a => uq(a)).result), Duration.Inf)
+
+    val resultQuestions = results.sortBy(a => a.questionTitle.split(" ").intersect(tokens).length).reverse.take(50)
+
+    fullQuestionsFromQuestionRows(resultQuestions, userId)
+  }
 }
 
 case class QuestionCreateObject(id: Option[String], title: String, text: String) {
   def toRow(creatorId: Int) = {
     val now = DateTime.now().getMillis
-    QuestionsRow(id.getOrElse(null), creatorId, title, text, now, now)
+    QuestionsRow(id.getOrElse(null), creatorId, title, text, true, now, now)
   }
 }
 
-case class QuestionJson(id: String, title: String, text: String, createdMillis: Long, updatedMillis: Long, isCreator: Boolean, creatorName: String)
+case class QuestionDeleteObject(id: String)
+
+case class QuestionJson(id: String, title: String, text: String, createdMillis: Long, updatedMillis: Long, isCreator: Boolean, creatorName: String, isActive: Boolean)
 
 case class QuestionFull(question: QuestionJson, answers: Seq[AnswerFull], comments: Seq[CommentJson], viewCount: Int)
 

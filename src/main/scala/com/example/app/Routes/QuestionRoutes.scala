@@ -4,9 +4,31 @@ import javax.naming.AuthenticationException
 
 import com.example.app.models._
 import com.example.app._
+import org.scalatra.Ok
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 
 trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with RegisteredSupport{
+
+  get("/questions/search/:query") {
+    contentType = formats("json")
+    authenticate()
+
+    val userId = user.userAccountId
+
+    val query = {params("query")}
+
+    if(registered()){
+      if(query.length > 1)
+        Question.simpleSearch(query, userId)
+      else
+        Nil
+    } else {
+      throw new AuthenticationException("Not registered")
+    }
+  }
 
   get("/questions/:questionId") {
     contentType = formats("json")
@@ -128,5 +150,52 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
     }
   }
 
+  post("/questions/delete") {
+    contentType = formats("json")
+    authenticate()
+
+    val userId = user.userAccountId
+
+    val deleteObject = parsedBody.extract[QuestionDeleteObject]
+
+    if(registered() && Question.authorizedToEditQuestion(deleteObject.id, userId)){
+      Await.result(Question.toggleActiveStatus(deleteObject.id, false), Duration.Inf)
+      deleteObject
+    } else {
+      throw new AuthenticationException("Not registered")
+    }
+  }
+
+  post("/answers/delete") {
+    contentType = formats("json")
+    authenticate()
+
+    val userId = user.userAccountId
+
+    val deleteObject = parsedBody.extract[AnswerDeleteObject]
+
+    if(registered() && Answer.authorizedToEditAnswer(deleteObject.id, userId)){
+      Await.result(Answer.toggleActiveStatus(deleteObject.id, false), Duration.Inf)
+      Ok{"200"}
+    } else {
+      throw new AuthenticationException("Not registered")
+    }
+  }
+
+  post("/comments/delete") {
+    contentType = formats("json")
+    authenticate()
+
+    val userId = user.userAccountId
+
+    val deleteObject = parsedBody.extract[CommentDeleteObject]
+
+    if(registered() && Comment.authorizedToEditComment(deleteObject.id, userId)){
+      Await.result(Comment.toggleActiveStatus(deleteObject.id, false), Duration.Inf)
+      Ok{"200"}
+    } else {
+      throw new AuthenticationException("Not registered")
+    }
+  }
 
 }

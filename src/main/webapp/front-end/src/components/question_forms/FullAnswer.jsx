@@ -14,7 +14,7 @@ import {
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
-import { saveReview, saveReviewSuccess, saveReviewError } from '../../actions.js';
+import { saveReview, saveReviewSuccess, saveReviewError, deleteAnswer, deleteAnswerSuccess, deleteAnswerError } from '../../actions.js';
 import { tryLogin, dispatchPattern } from '../../utilities.js';
 import NavBar from '../NavBar.jsx';
 import PointsBox from './PointsBox.jsx';
@@ -24,9 +24,6 @@ import AnswersListContainer from './AnswersList.jsx';
 class FullAnswer extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      page: 0
-    };
   }
 
   render() {
@@ -37,11 +34,14 @@ class FullAnswer extends React.Component {
 
     const refresh = this.props.refresh
 
+    const deleteAnswer = this.props.deleteAnswer(refresh)
+
     var actionBox = null
 
     if(answer.getIn(['answer', 'isCreator'])) {
         actionBox = <div className="action-box">
-                        <Link to={"/question/"+this.props.questionId+"/answers/"+answerId}>edit</Link>
+                        <Link to={"/question/"+this.props.questionId+"/answers/"+answerId}>edit</Link>{' '}
+                        <Link to="#" onClick={() => deleteAnswer(answerId)}>delete</Link>
                     </div>
     }
 
@@ -81,8 +81,11 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = (dispatch, ownProps) => {
 
+    const deleteAnswerCallback = (callback) => dispatchPattern(deleteAnswer, deleteAnswerSuccess, deleteAnswerError, callback)
+
   return {
-    saveReview: dispatchPattern(saveReview, saveReviewSuccess, saveReviewError, ownProps.refresh)
+    saveReview: dispatchPattern(saveReview, saveReviewSuccess, saveReviewError, ownProps.refresh),
+    deleteAnswer: deleteAnswerCallback
   };
 };
 

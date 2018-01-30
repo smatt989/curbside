@@ -23,19 +23,20 @@ trait Tables {
    *  @param questionId Database column QUESTION_ID SqlType(VARCHAR)
    *  @param creatorId Database column CREATOR_ID SqlType(INTEGER)
    *  @param answerText Database column ANSWER_TEXT SqlType(VARCHAR)
+   *  @param isActive Database column IS_ACTIVE SqlType(BOOLEAN)
    *  @param createdMillis Database column CREATED_MILLIS SqlType(BIGINT)
    *  @param updatedMillis Database column UPDATED_MILLIS SqlType(BIGINT) */
-  case class AnswersRow(answerId: String, questionId: String, creatorId: Int, answerText: String, createdMillis: Long, updatedMillis: Long)
+  case class AnswersRow(answerId: String, questionId: String, creatorId: Int, answerText: String, isActive: Boolean, createdMillis: Long, updatedMillis: Long)
   /** GetResult implicit for fetching AnswersRow objects using plain SQL queries */
-  implicit def GetResultAnswersRow(implicit e0: GR[String], e1: GR[Int], e2: GR[Long]): GR[AnswersRow] = GR{
+  implicit def GetResultAnswersRow(implicit e0: GR[String], e1: GR[Int], e2: GR[Boolean], e3: GR[Long]): GR[AnswersRow] = GR{
     prs => import prs._
-    AnswersRow.tupled((<<[String], <<[String], <<[Int], <<[String], <<[Long], <<[Long]))
+    AnswersRow.tupled((<<[String], <<[String], <<[Int], <<[String], <<[Boolean], <<[Long], <<[Long]))
   }
   /** Table description of table ANSWERS. Objects of this class serve as prototypes for rows in queries. */
   class Answers(_tableTag: Tag) extends Table[AnswersRow](_tableTag, Some("CURBSIDE"), "ANSWERS") {
-    def * = (answerId, questionId, creatorId, answerText, createdMillis, updatedMillis) <> (AnswersRow.tupled, AnswersRow.unapply)
+    def * = (answerId, questionId, creatorId, answerText, isActive, createdMillis, updatedMillis) <> (AnswersRow.tupled, AnswersRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(answerId), Rep.Some(questionId), Rep.Some(creatorId), Rep.Some(answerText), Rep.Some(createdMillis), Rep.Some(updatedMillis)).shaped.<>({r=>import r._; _1.map(_=> AnswersRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(answerId), Rep.Some(questionId), Rep.Some(creatorId), Rep.Some(answerText), Rep.Some(isActive), Rep.Some(createdMillis), Rep.Some(updatedMillis)).shaped.<>({r=>import r._; _1.map(_=> AnswersRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column ANSWER_ID SqlType(VARCHAR), PrimaryKey */
     val answerId: Rep[String] = column[String]("ANSWER_ID", O.PrimaryKey)
@@ -45,6 +46,8 @@ trait Tables {
     val creatorId: Rep[Int] = column[Int]("CREATOR_ID")
     /** Database column ANSWER_TEXT SqlType(VARCHAR) */
     val answerText: Rep[String] = column[String]("ANSWER_TEXT")
+    /** Database column IS_ACTIVE SqlType(BOOLEAN) */
+    val isActive: Rep[Boolean] = column[Boolean]("IS_ACTIVE")
     /** Database column CREATED_MILLIS SqlType(BIGINT) */
     val createdMillis: Rep[Long] = column[Long]("CREATED_MILLIS")
     /** Database column UPDATED_MILLIS SqlType(BIGINT) */
@@ -64,19 +67,20 @@ trait Tables {
    *  @param questionId Database column QUESTION_ID SqlType(VARCHAR), Default(None)
    *  @param answerId Database column ANSWER_ID SqlType(VARCHAR), Default(None)
    *  @param commentText Database column COMMENT_TEXT SqlType(VARCHAR)
+   *  @param isActive Database column IS_ACTIVE SqlType(BOOLEAN)
    *  @param createdMillis Database column CREATED_MILLIS SqlType(BIGINT)
    *  @param updatedMillis Database column UPDATED_MILLIS SqlType(BIGINT) */
-  case class CommentsRow(commentId: String, creatorId: Int, questionId: Option[String] = None, answerId: Option[String] = None, commentText: String, createdMillis: Long, updatedMillis: Long)
+  case class CommentsRow(commentId: String, creatorId: Int, questionId: Option[String] = None, answerId: Option[String] = None, commentText: String, isActive: Boolean, createdMillis: Long, updatedMillis: Long)
   /** GetResult implicit for fetching CommentsRow objects using plain SQL queries */
-  implicit def GetResultCommentsRow(implicit e0: GR[String], e1: GR[Int], e2: GR[Option[String]], e3: GR[Long]): GR[CommentsRow] = GR{
+  implicit def GetResultCommentsRow(implicit e0: GR[String], e1: GR[Int], e2: GR[Option[String]], e3: GR[Boolean], e4: GR[Long]): GR[CommentsRow] = GR{
     prs => import prs._
-    CommentsRow.tupled((<<[String], <<[Int], <<?[String], <<?[String], <<[String], <<[Long], <<[Long]))
+    CommentsRow.tupled((<<[String], <<[Int], <<?[String], <<?[String], <<[String], <<[Boolean], <<[Long], <<[Long]))
   }
   /** Table description of table COMMENTS. Objects of this class serve as prototypes for rows in queries. */
   class Comments(_tableTag: Tag) extends Table[CommentsRow](_tableTag, Some("CURBSIDE"), "COMMENTS") {
-    def * = (commentId, creatorId, questionId, answerId, commentText, createdMillis, updatedMillis) <> (CommentsRow.tupled, CommentsRow.unapply)
+    def * = (commentId, creatorId, questionId, answerId, commentText, isActive, createdMillis, updatedMillis) <> (CommentsRow.tupled, CommentsRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(commentId), Rep.Some(creatorId), questionId, answerId, Rep.Some(commentText), Rep.Some(createdMillis), Rep.Some(updatedMillis)).shaped.<>({r=>import r._; _1.map(_=> CommentsRow.tupled((_1.get, _2.get, _3, _4, _5.get, _6.get, _7.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(commentId), Rep.Some(creatorId), questionId, answerId, Rep.Some(commentText), Rep.Some(isActive), Rep.Some(createdMillis), Rep.Some(updatedMillis)).shaped.<>({r=>import r._; _1.map(_=> CommentsRow.tupled((_1.get, _2.get, _3, _4, _5.get, _6.get, _7.get, _8.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column COMMENT_ID SqlType(VARCHAR), PrimaryKey */
     val commentId: Rep[String] = column[String]("COMMENT_ID", O.PrimaryKey)
@@ -88,6 +92,8 @@ trait Tables {
     val answerId: Rep[Option[String]] = column[Option[String]]("ANSWER_ID", O.Default(None))
     /** Database column COMMENT_TEXT SqlType(VARCHAR) */
     val commentText: Rep[String] = column[String]("COMMENT_TEXT")
+    /** Database column IS_ACTIVE SqlType(BOOLEAN) */
+    val isActive: Rep[Boolean] = column[Boolean]("IS_ACTIVE")
     /** Database column CREATED_MILLIS SqlType(BIGINT) */
     val createdMillis: Rep[Long] = column[Long]("CREATED_MILLIS")
     /** Database column UPDATED_MILLIS SqlType(BIGINT) */
@@ -157,19 +163,20 @@ trait Tables {
    *  @param creatorId Database column CREATOR_ID SqlType(INTEGER)
    *  @param questionTitle Database column QUESTION_TITLE SqlType(VARCHAR)
    *  @param questionText Database column QUESTION_TEXT SqlType(VARCHAR)
+   *  @param isActive Database column IS_ACTIVE SqlType(BOOLEAN)
    *  @param createdMillis Database column CREATED_MILLIS SqlType(BIGINT)
    *  @param updatedMillis Database column UPDATED_MILLIS SqlType(BIGINT) */
-  case class QuestionsRow(questionId: String, creatorId: Int, questionTitle: String, questionText: String, createdMillis: Long, updatedMillis: Long)
+  case class QuestionsRow(questionId: String, creatorId: Int, questionTitle: String, questionText: String, isActive: Boolean, createdMillis: Long, updatedMillis: Long)
   /** GetResult implicit for fetching QuestionsRow objects using plain SQL queries */
-  implicit def GetResultQuestionsRow(implicit e0: GR[String], e1: GR[Int], e2: GR[Long]): GR[QuestionsRow] = GR{
+  implicit def GetResultQuestionsRow(implicit e0: GR[String], e1: GR[Int], e2: GR[Boolean], e3: GR[Long]): GR[QuestionsRow] = GR{
     prs => import prs._
-    QuestionsRow.tupled((<<[String], <<[Int], <<[String], <<[String], <<[Long], <<[Long]))
+    QuestionsRow.tupled((<<[String], <<[Int], <<[String], <<[String], <<[Boolean], <<[Long], <<[Long]))
   }
   /** Table description of table QUESTIONS. Objects of this class serve as prototypes for rows in queries. */
   class Questions(_tableTag: Tag) extends Table[QuestionsRow](_tableTag, Some("CURBSIDE"), "QUESTIONS") {
-    def * = (questionId, creatorId, questionTitle, questionText, createdMillis, updatedMillis) <> (QuestionsRow.tupled, QuestionsRow.unapply)
+    def * = (questionId, creatorId, questionTitle, questionText, isActive, createdMillis, updatedMillis) <> (QuestionsRow.tupled, QuestionsRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(questionId), Rep.Some(creatorId), Rep.Some(questionTitle), Rep.Some(questionText), Rep.Some(createdMillis), Rep.Some(updatedMillis)).shaped.<>({r=>import r._; _1.map(_=> QuestionsRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(questionId), Rep.Some(creatorId), Rep.Some(questionTitle), Rep.Some(questionText), Rep.Some(isActive), Rep.Some(createdMillis), Rep.Some(updatedMillis)).shaped.<>({r=>import r._; _1.map(_=> QuestionsRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column QUESTION_ID SqlType(VARCHAR), PrimaryKey */
     val questionId: Rep[String] = column[String]("QUESTION_ID", O.PrimaryKey)
@@ -179,6 +186,8 @@ trait Tables {
     val questionTitle: Rep[String] = column[String]("QUESTION_TITLE")
     /** Database column QUESTION_TEXT SqlType(VARCHAR) */
     val questionText: Rep[String] = column[String]("QUESTION_TEXT")
+    /** Database column IS_ACTIVE SqlType(BOOLEAN) */
+    val isActive: Rep[Boolean] = column[Boolean]("IS_ACTIVE")
     /** Database column CREATED_MILLIS SqlType(BIGINT) */
     val createdMillis: Rep[Long] = column[Long]("CREATED_MILLIS")
     /** Database column UPDATED_MILLIS SqlType(BIGINT) */

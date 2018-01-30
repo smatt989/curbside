@@ -13,7 +13,7 @@ import {
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
-import { getQuestion, getQuestionSuccess, getQuestionError, createQuestionView, createQuestionViewSuccess, createQuestionViewError } from '../../actions.js';
+import { getQuestion, getQuestionSuccess, getQuestionError, createQuestionView, createQuestionViewSuccess, createQuestionViewError, deleteQuestion, deleteQuestionSuccess, deleteQuestionError } from '../../actions.js';
 import { tryLogin, dispatchPattern } from '../../utilities.js';
 import NavBar from '../NavBar.jsx';
 import InfoBox from '../feed/InfoBox.jsx';
@@ -25,6 +25,11 @@ class FullQuestion extends React.Component {
     super(props);
 
     this.getQuestionId = this.getQuestionId.bind(this)
+    this.setDeleteFinished = this.setDeleteFinished.bind(this)
+
+    this.state = {
+        deleteFinished: false
+    }
   }
 
   getQuestionId() {
@@ -37,7 +42,16 @@ class FullQuestion extends React.Component {
     this.props.createQuestionView(questionId)
   }
 
+  setDeleteFinished() {
+    this.setState({deleteFinished: true})
+  }
+
   render() {
+
+    if(this.state.deleteFinished){
+        return <Redirect to={"/feed"} />
+    }
+
     const questionId = this.getQuestionId()
 
     const refresh = () => this.props.getQuestion(questionId)
@@ -46,9 +60,13 @@ class FullQuestion extends React.Component {
 
     var actionBox = null
 
+    const setDeleteFinished = this.setDeleteFinished
+    const deleteQuestion = this.props.deleteQuestion(setDeleteFinished)
+
     if(this.props.question.getIn(['question', 'question', 'isCreator'])) {
         actionBox = <div className="action-box">
-                        <Link to={"/question/"+questionId+"/edit"}>edit</Link>
+                        <Link to={"/question/"+questionId+"/edit"}>edit</Link>{' '}
+                        <Link to="#" onClick={() => deleteQuestion(questionId)}>delete</Link>
                     </div>
     }
 
@@ -56,8 +74,8 @@ class FullQuestion extends React.Component {
       <div >
         <NavBar inverse={false} />
         <Grid>
-            <h3 className="m-b-3">{question.getIn(['question', 'question', 'title'], '')}</h3>
-            <div>
+            <h2 className="question-header m-b-3">{question.getIn(['question', 'question', 'title'], '')}</h2>
+            <div className="question-item">
                 <div className="col-md-1">
                     <InfoBox major={question.getIn(['question', 'viewCount'], 0)} minor={"views"} />
                 </div>
@@ -77,7 +95,7 @@ class FullQuestion extends React.Component {
                 </div>
             </div>
             <div>
-                <h3>Answers</h3>
+                <h4>Answers</h4>
                 <AnswersListContainer refresh={refresh} questionId={questionId} />
             </div>
         </Grid>
@@ -95,14 +113,19 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = (dispatch, ownProps) => {
 
+  const questionId = ownProps.match.params.id
+
   const getQuestionFunction = dispatchPattern(getQuestion, getQuestionSuccess, getQuestionError)
   const createQuestionViewCallback = (view) => {
     getQuestionFunction(view.questionId)
   }
 
+  const deleteQuestionCallback = (callback) => dispatchPattern(deleteQuestion, deleteQuestionSuccess, deleteQuestionError, callback)
+
   return {
     getQuestion: getQuestionFunction,
-    createQuestionView: dispatchPattern(createQuestionView, createQuestionViewSuccess, createQuestionViewError, createQuestionViewCallback)
+    createQuestionView: dispatchPattern(createQuestionView, createQuestionViewSuccess, createQuestionViewError, createQuestionViewCallback),
+    deleteQuestion: deleteQuestionCallback
   };
 };
 

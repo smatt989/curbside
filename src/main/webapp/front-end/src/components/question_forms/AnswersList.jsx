@@ -24,7 +24,7 @@ class AnswersList extends React.Component {
     return (
       <div >
         <ListGroup componentClass="ul">
-            {this.props.answers.map(a => <FullAnswerContainer refresh={refresh} questionId={this.props.questionId} answer={a} />)}
+            {this.props.answers.map(a => <FullAnswerContainer key={a.getIn(['answer', 'id'])} refresh={refresh} questionId={this.props.questionId} answer={a} />)}
         </ListGroup>
         <div>
             <NewAnswerContainer refresh={refresh} questionId={this.props.questionId}/>
