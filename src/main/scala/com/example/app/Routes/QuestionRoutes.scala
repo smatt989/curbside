@@ -75,6 +75,19 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
     }
   }
 
+  get("/questions/created") {
+    contentType = formats("json")
+    authenticate()
+
+    val userId = user.userAccountId
+
+    if(registered()){
+      Question.allMyQuestions(userId)
+    } else {
+      throw new AuthenticationException("Not registered")
+    }
+  }
+
   post("/questions/save") {
     contentType = formats("json")
     authenticate()
@@ -85,7 +98,8 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
 
     if(registered() && Question.authorizedToEditQuestion(questionRequest, userId)){
       val saved = Await.result(Question.save(questionRequest.toRow(userId)), Duration.Inf)
-      Question.sendEmailToSubscribers(saved)
+      //Question.sendEmailToSubscribers(saved)
+      EmailManager.emailActor ! saved
       Question.manyToJson(userId, Seq(saved)).head
     } else {
       throw new AuthenticationException("Not registered")
@@ -102,7 +116,8 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
 
     if(registered() && Answer.authorizedToEditAnswer(answerRequest, userId)){
       val saved = Await.result(Answer.save(answerRequest.toRow(userId)), Duration.Inf)
-      Answer.sendEmailToSubscribers(saved)
+      //Answer.sendEmailToSubscribers(saved)
+      EmailManager.emailActor ! saved
       Answer.manyToJson(userId, Seq(saved)).head
     } else {
       throw new AuthenticationException("Not registered")
@@ -119,7 +134,8 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
 
     if(registered() && Comment.authorizedToEditComment(commentRequest, userId)){
       val saved = Await.result(Comment.save(commentRequest.toRow(userId)), Duration.Inf)
-      Comment.sendEmailToSubscribers(saved)
+      //Comment.sendEmailToSubscribers(saved)
+      EmailManager.emailActor ! saved
       Comment.manyToJson(userId, Seq(saved)).head
     } else {
       throw new AuthenticationException("Not registered")

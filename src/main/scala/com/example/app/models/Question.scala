@@ -95,7 +95,13 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
 
   def myQuestions(userId: Int, page: Int = 0) = {
 
-    val questions = Await.result(db.run(table.filter(_.creatorId === userId).sortBy(_.updatedMillis.desc).drop(page * onePage).take(onePage).result), Duration.Inf)
+    val questions = Await.result(db.run(table.filter(a => a.isActive && a.creatorId === userId).sortBy(_.updatedMillis.desc).drop(page * onePage).take(onePage).result), Duration.Inf)
+
+    fullQuestionsFromQuestionRows(questions, userId)
+  }
+
+  def allMyQuestions(userId: Int) = {
+    val questions = Await.result(db.run(table.filter(a => a.isActive && a.creatorId === userId).sortBy(_.updatedMillis.desc).result), Duration.Inf)
 
     fullQuestionsFromQuestionRows(questions, userId)
   }

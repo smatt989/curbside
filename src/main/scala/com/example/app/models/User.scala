@@ -26,11 +26,16 @@ case class UserLogin(email: String, password: String)
 
 case class UserJson(id: Int, username: String)
 
+case class UserRegisteredJson(username: String, registered: Boolean)
+
 
 object User extends UpdatableDBObject[UserAccountsRow, UserAccounts]{
 
   def makeJson(a: UserAccountsRow) =
     UserJson(a.userAccountId, a.username)
+
+  def registeredJson(a: UserAccountsRow) =
+    UserRegisteredJson(a.username, a.registered)
 
   lazy val table = T.UserAccounts
 
@@ -80,17 +85,38 @@ object User extends UpdatableDBObject[UserAccountsRow, UserAccounts]{
   }
 
   def uniqueEmail(email: String) =
-    db.run(table.filter(_.email.toLowerCase === email.toLowerCase).result).map(_.isEmpty)
+    Await.result(db.run(table.filter(_.email.toLowerCase === email.toLowerCase).result).map(_.isEmpty), Duration.Inf)
+
+  val emailRegex = "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"
+
+  def validEmailMakeup(email: String) =
+    email.matches(emailRegex)
 
   def uniqueUserName(username: String) =
-    db.run(table.filter(_.username.toLowerCase === username.toLowerCase).result).map(_.isEmpty)
+    Await.result(db.run(table.filter(_.username.toLowerCase === username.toLowerCase).result).map(_.isEmpty), Duration.Inf)
+
+  def validUsernameMakeup(username: String) =
+   username.matches("""^(?=.{3,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9_]+(?<![_.])$""")
+
+  def validUserName(username: String) = {
+    val validMakeup = validUsernameMakeup(username)
+    val unique = uniqueUserName(username)
+    validMakeup && unique
+  }
+
+  def validEmail(email: String) = {
+    val validMakeup = validEmailMakeup(email)
+    val unique = uniqueEmail(email)
+    validMakeup && unique
+  }
+
+  def validPassword(password: String) = {
+    password.length > 5 && password.length < 41
+  }
 
   def createNewUser(userCreate: UserCreate) = {
-    val emailIsUnique = Await.result(uniqueEmail(userCreate.email), Duration.Inf)
 
-    val usernameIsUnique = Await.result(uniqueUserName(userCreate.username), Duration.Inf)
-
-    if(emailIsUnique && usernameIsUnique)
+    if(validUserName(userCreate.username) && validEmail(userCreate.email) && validPassword(userCreate.password))
       create(userCreate.makeUser)
     else
       throw new Exception("Must provide unique email")
@@ -111,3 +137,5 @@ object User extends UpdatableDBObject[UserAccountsRow, UserAccounts]{
     }
   }
 }
+
+case class ValidInput(valid: Boolean, value: String, message: Option[String] = None)

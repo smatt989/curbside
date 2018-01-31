@@ -62,7 +62,7 @@ object Comment extends UpdatableUUIDObject[CommentsRow, Comments]{
       val answer = Await.result(Answer.byId(newComment.answerId.get), Duration.Inf)
       val question = Await.result(Question.byId(answer.questionId), Duration.Inf)
       val otherComments = Await.result(byAnswerIds(Seq(answer.answerId)), Duration.Inf)
-      val usersToNotify = otherComments.filter(_.creatorId != newComment.creatorId).map(_.creatorId).distinct
+      val usersToNotify = otherComments.filter(a => a.creatorId != newComment.creatorId && a.creatorId != question.creatorId).map(_.creatorId).distinct
       val userEmails = Await.result(User.byIds(usersToNotify :+ answer.creatorId), Duration.Inf).map(u => u.userAccountId -> u.email).toMap
 
       MailJetSender.newAnswerCommentOtherCommenters(question.questionTitle, question.questionId, usersToNotify.map(userEmails))
@@ -76,7 +76,7 @@ object Comment extends UpdatableUUIDObject[CommentsRow, Comments]{
 
       val question = Await.result(Question.byId(newComment.questionId.get), Duration.Inf)
       val otherComments = Await.result(byQuestionIds(Seq(question.questionId)), Duration.Inf)
-      val usersToNotify = otherComments.filter(_.creatorId != newComment.creatorId).map(_.creatorId).distinct
+      val usersToNotify = otherComments.filter(a => a.creatorId != newComment.creatorId && a.creatorId != question.creatorId).map(_.creatorId).distinct
       val userEmails = Await.result(User.byIds(usersToNotify :+ question.creatorId), Duration.Inf).map(u => u.userAccountId -> u.email).toMap
 
       MailJetSender.newQuestionCommentOtherCommenters(question.questionTitle, question.questionId, usersToNotify.map(userEmails))

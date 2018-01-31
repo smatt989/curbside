@@ -2,11 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Route, Redirect } from 'react-router-dom';
 
-const PrivateRoute = ({ component: Component, isAuthenticated, path }) => {
+const PrivateRoute = ({ component: Component, isAuthenticated, isRegistered, path }) => {
+
   return <Route path={path} render={props => (
-    isAuthenticated ? (
+    isAuthenticated && isRegistered ? (
       <Component {...props}/>
-    ) : (
+    ) : isAuthenticated && !isRegistered ? (
+      <Redirect to={'/unregistered'} />
+    ): (
       <Redirect to={{
         pathname: '/login',
         state: { from: props.location }
@@ -17,7 +20,8 @@ const PrivateRoute = ({ component: Component, isAuthenticated, path }) => {
 
 const mapStateToProps = state => {
   return {
-    isAuthenticated: state.getIn(['login', 'session']) != null
+    isAuthenticated: state.getIn(['login', 'session']) != null,
+    isRegistered: state.getIn(['getSelf', 'user', 'registered'], true)
   };
 };
 

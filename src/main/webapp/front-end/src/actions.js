@@ -564,3 +564,61 @@ export function questionSearchError(error) {
     error: error
   };
 }
+
+export function validateUsername(username) {
+
+  const request = axios({
+    method: 'post',
+    url: `${domain}/validate/username`,
+    headers: {'username': username}
+  });
+
+  return {
+    type: 'VALIDATE_USERNAME',
+    payload: request
+  };
+
+}
+
+export function validateUsernameSuccess(loaded) {
+  return {
+    type: 'VALIDATE_USERNAME_SUCCESS',
+    payload: loaded
+  };
+}
+
+export function validateUsernameError(error) {
+  return {
+    type: 'VALIDATE_USERNAME_ERROR',
+    error: error
+  };
+}
+
+export function questionsCreated() {
+
+  const request = axios({
+    method: 'get',
+    url: `${domain}/questions/created`,
+    headers: authenticate()
+  });
+
+  return {
+    type: 'QUESTIONS_CREATED',
+    payload: request
+  };
+
+}
+
+export function questionsCreatedSuccess(loaded) {
+  return {
+    type: 'QUESTIONS_CREATED_SUCCESS',
+    payload: loaded
+  };
+}
+
+export function questionsCreatedError(error) {
+  return {
+    type: 'QUESTIONS_CREATED_ERROR',
+    error: error
+  };
+}

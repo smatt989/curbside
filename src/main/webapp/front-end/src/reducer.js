@@ -34,7 +34,9 @@ function cleanState() {
     deleteQuestion: Map({loading: false, error: null}),
     deleteAnswer: Map({loading: false, error: null}),
     deleteComment: Map({loading: false, error: null}),
-    questionSearch: Map({results: List.of(), loading: false, error: null})
+    questionSearch: Map({results: List.of(), loading: false, error: null}),
+    validateUsername: Map({validation: null, loading: false, error: null}),
+    questionsCreated: Map({questions: List.of(), loading: false, error: null})
   });
 
   return cleanState;
@@ -296,6 +298,30 @@ function questionSearchError(state, error) {
   return state.set('questionSearch', Map({results: List.of(), loading: false, error: error}));
 }
 
+function validateUsername(state) {
+  return state.set('validateUsername', Map({validation: null, loading: true, error: null}));
+}
+
+function validateUsernameSuccess(state, validation){
+  return state.set('validateUsername', Map({validation: Immutable.fromJS(validation), loading: false, error: null}));
+}
+
+function validateUsernameError(state, error) {
+  return state.set('validateUsername', Map({validation: null, loading: false, error: error}));
+}
+
+function questionsCreated(state) {
+  return state.set('questionsCreated', Map({questions: List.of(), loading: true, error: null}));
+}
+
+function questionsCreatedSuccess(state, questions) {
+  return state.set('questionsCreated', Map({questions: Immutable.fromJS(questions), loading: false, error: null}));
+}
+
+function questionsCreatedError(state, error) {
+  return state.set('questionsCreated', Map({questions: List.of(), loading: false, error: error}));
+}
+
 export default function reducer(state = Map(), action) {
   switch (action.type) {
     case 'CLEAN_STATE':
@@ -410,6 +436,18 @@ export default function reducer(state = Map(), action) {
       return questionSearchSuccess(state, action.payload);
     case 'QUESTION_SEARCH_ERROR':
       return questionSearchError(state, action.error);
+    case 'VALIDATE_USERNAME':
+      return validateUsername(state);
+    case 'VALIDATE_USERNAME_SUCCESS':
+      return validateUsernameSuccess(state, action.payload);
+    case 'VALIDATE_USERNAME_ERROR':
+      return validateUsernameError(state, action.error);
+    case 'QUESTIONS_CREATED':
+      return questionsCreated(state);
+    case 'QUESTIONS_CREATED_SUCCESS':
+      return questionsCreatedSuccess(state, action.payload);
+    case 'QUESTIONS_CREATED_ERROR':
+      return questionsCreatedError(state, action.error);
     default:
       return state;
   }

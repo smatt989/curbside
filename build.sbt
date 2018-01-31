@@ -30,6 +30,7 @@ lazy val project = Project (
       "org.scalatra" %% "scalatra-scalate" % ScalatraVersion,
       "org.scalatra" %% "scalatra-specs2" % ScalatraVersion % "test",
       "org.scalatra" %% "scalatra-json" % ScalatraVersion,
+      "com.typesafe.akka" %% "akka-actor" % "2.4.12",
       "org.json4s"   %% "json4s-jackson" % "3.3.0",
       "ch.qos.logback" % "logback-classic" % "1.1.5" % "runtime",
       "org.eclipse.jetty" % "jetty-webapp" % "8.1.10.v20130312" % "compile;container",

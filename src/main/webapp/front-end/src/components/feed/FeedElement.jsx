@@ -13,6 +13,14 @@ import NavBar from '../NavBar.jsx';
 import Question from './Question.jsx'
 
 const FeedElement = ({ feed, handleQueryUpdate, queryValue, goToSearch }) => {
+
+  const onEnter = (e) => {
+    var code = (e.keyCode ? e.keyCode : e.which);
+    if(code == 13) {
+        goToSearch()
+    }
+  }
+
   return (
                   <div >
                     <NavBar inverse={false} />
@@ -20,7 +28,7 @@ const FeedElement = ({ feed, handleQueryUpdate, queryValue, goToSearch }) => {
                         <h3 className="col-md-3">Questions:</h3>
                         <FormGroup className="col-md-5">
                           <InputGroup>
-                            <FormControl onChange={handleQueryUpdate} type="text" placeholder="Search for questions..." value={queryValue} />
+                            <FormControl onChange={handleQueryUpdate} onKeyDown={onEnter} type="text" placeholder="Search for questions..." value={queryValue} />
                             <InputGroup.Button>
                               <Button onClick={goToSearch}>Search</Button>
                             </InputGroup.Button>

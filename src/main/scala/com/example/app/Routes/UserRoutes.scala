@@ -26,12 +26,52 @@ trait UserRoutes extends SlickRoutes with AuthenticationSupport{
     User.makeJson(created)
   }
 
+  post("/validate/username") {
+    contentType = formats("json")
+
+    val username = request.header(SessionTokenStrategy.Username).get
+
+    if(!User.validUsernameMakeup(username)){
+      ValidInput(false, username, Some("Username must be between 3 and 20 characters long, and cannot contain spaces, periods, or other special characters"))
+    } else if(!User.uniqueUserName(username)) {
+      ValidInput(false, username, Some("Username is already taken"))
+    } else {
+      ValidInput(true, username)
+    }
+  }
+
+  post("/validate/email") {
+    contentType = formats("json")
+
+    val email = request.header(SessionTokenStrategy.Email).get
+
+    if(!User.validEmailMakeup(email)){
+      ValidInput(false, email, Some("Must provide a valid email address"))
+    } else if(!User.uniqueEmail(email)) {
+      ValidInput(false, email, Some("Email already associated with an account"))
+    } else {
+      ValidInput(true, email)
+    }
+  }
+
+  post("/validate/password") {
+    contentType = formats("json")
+
+    val password = request.header(SessionTokenStrategy.Username).get
+
+    if(!User.validPassword(password)){
+      ValidInput(false, "", Some("Password must be between 6 and 40 characters"))
+    } else {
+      ValidInput(true, "")
+    }
+  }
+
   get("/me") {
     contentType = formats("json")
     authenticate()
 
     val u = user
-    User.makeJson(u)
+    User.registeredJson(u)
   }
 
   get("/register/:code") {

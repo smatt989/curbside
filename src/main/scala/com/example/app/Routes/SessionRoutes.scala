@@ -15,8 +15,6 @@ trait SessionRoutes extends SlickRoutes with AuthenticationSupport with Register
     contentType = formats("json")
     authenticate()
 
-    println("registered: "+registered())
-
     if(!registered()){
       Ok{"333"}
     }
