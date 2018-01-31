@@ -84,7 +84,9 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
     val questionRequest = parsedBody.extract[QuestionCreateObject]
 
     if(registered() && Question.authorizedToEditQuestion(questionRequest, userId)){
-      Question.save(questionRequest.toRow(userId)).map(q => Question.manyToJson(userId, Seq(q)).head)
+      val saved = Await.result(Question.save(questionRequest.toRow(userId)), Duration.Inf)
+      Question.sendEmailToSubscribers(saved)
+      Question.manyToJson(userId, Seq(saved)).head
     } else {
       throw new AuthenticationException("Not registered")
     }
@@ -99,7 +101,9 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
     val answerRequest = parsedBody.extract[AnswerCreateObject]
 
     if(registered() && Answer.authorizedToEditAnswer(answerRequest, userId)){
-       Answer.save(answerRequest.toRow(userId)).map(a => Answer.manyToJson(userId, Seq(a)).head)
+      val saved = Await.result(Answer.save(answerRequest.toRow(userId)), Duration.Inf)
+      Answer.sendEmailToSubscribers(saved)
+      Answer.manyToJson(userId, Seq(saved)).head
     } else {
       throw new AuthenticationException("Not registered")
     }
@@ -114,7 +118,9 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
     val commentRequest = parsedBody.extract[CommentCreateObject]
 
     if(registered() && Comment.authorizedToEditComment(commentRequest, userId)){
-      Comment.save(commentRequest.toRow(userId)).map(c => Comment.manyToJson(userId, Seq(c)).head)
+      val saved = Await.result(Comment.save(commentRequest.toRow(userId)), Duration.Inf)
+      Comment.sendEmailToSubscribers(saved)
+      Comment.manyToJson(userId, Seq(saved)).head
     } else {
       throw new AuthenticationException("Not registered")
     }

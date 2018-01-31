@@ -1,8 +1,7 @@
 package com.example.app.models
 
-import com.example.app.UpdatableUUIDObject
+import com.example.app.{AppGlobals, MailJetSender, UpdatableUUIDObject}
 import com.example.app.db.Tables.{Questions, QuestionsRow}
-import com.example.app.AppGlobals
 import AppGlobals.dbConfig.driver.api._
 import org.joda.time.DateTime
 
@@ -128,6 +127,18 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
     val resultQuestions = results.sortBy(a => a.questionTitle.split(" ").intersect(tokens).length).reverse.take(50)
 
     fullQuestionsFromQuestionRows(resultQuestions, userId)
+  }
+
+  def sendEmailToSubscribers(newQuestion: QuestionsRow) = {
+
+    val commentors = Await.result(Comment.byQuestionIds(Seq(newQuestion.questionId)), Duration.Inf)
+    val answers = Await.result(Answer.byQuestionIds(Seq(newQuestion.questionId)), Duration.Inf)
+
+    val toSend = (commentors.map(_.creatorId) ++ answers.map(_.creatorId)).filter(_ != newQuestion.creatorId).distinct
+
+    val userEmails = Await.result(User.byIds(toSend), Duration.Inf).map(a => a.email)
+
+    MailJetSender.questionEdited(newQuestion.questionTitle, newQuestion.questionId, userEmails)
   }
 }
 

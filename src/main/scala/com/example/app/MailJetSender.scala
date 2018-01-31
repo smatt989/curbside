@@ -1,7 +1,7 @@
 package com.example.app
 
-import com.example.app.db.Tables.{RegistrationsRow, UserAccountsRow}
-import com.example.app.models.{Registration, UserJson}
+import com.example.app.db.Tables.{QuestionsRow, RegistrationsRow, UserAccountsRow}
+import com.example.app.models.{QuestionFull, Registration, UserJson}
 import com.mailjet.client.{MailjetClient, MailjetRequest}
 import com.mailjet.client.resource.Email
 import org.joda.time.DateTime
@@ -38,6 +38,61 @@ object MailJetSender {
     val response = mailjetClient.post(request)
     System.out.println(response.getData());
     println("sent")
+  }
+
+
+  def questionEdited(questionTitle: String, questionId: String, toEmail: Seq[String]) = {
+    val emailTemplate = {
+      "The author edited the question, "+questionTitle+"<br /><br /><a href='"+DOMAIN+"#/question/"+questionId+"'>VIEW NOW </a>"
+    }
+
+    toEmail.foreach( u =>
+      sendEmail("Question edited", emailTemplate, u)
+    )
+  }
+
+  def newAnswerAdded(questionTitle: String, questionId: String, toEmail: String) = {
+    val emailTemplate = {
+      "Someone has added a new answer to the question, "+questionTitle+"<br /><br /><a href='"+DOMAIN+"#/question/"+questionId+"'>VIEW NOW</a>"
+    }
+
+    sendEmail("New answer", emailTemplate, toEmail)
+  }
+
+  def newQuestionCommentOtherCommenters(questionTitle: String, questionId: String, toEmail: Seq[String]) = {
+    val emailTemplate = {
+      "Someone has added a new comment to the question, "+questionTitle+"<br /><br /><a href='"+DOMAIN+"#/question/"+questionId+"'>VIEW NOW</a>"
+    }
+
+    toEmail.foreach( u =>
+      sendEmail("New comment", emailTemplate, u)
+    )
+  }
+
+  def newQuestionCommentQuestionAuthor(questionTitle: String, questionId: String, toEmail: String) = {
+    val emailTemplate = {
+      "Someone has added a new comment to your question, "+questionTitle+"<br /><br /><a href='"+DOMAIN+"#/question/"+questionId+"'>VIEW NOW</a>"
+    }
+
+    sendEmail("New comment", emailTemplate, toEmail)
+  }
+
+  def newAnswerCommentOtherCommenters(questionTitle: String, questionId: String, toEmail: Seq[String]) = {
+    val emailTemplate = {
+      "Someone has added a new comment in the question, "+questionTitle+"<br /><br /><a href='"+DOMAIN+"#/question/"+questionId+"'>VIEW NOW</a>"
+    }
+
+    toEmail.foreach(u =>
+      sendEmail("New comment", emailTemplate, u)
+    )
+  }
+
+  def newAnswerCommentAnswerAuthor(questionTitle: String, questionId: String, toEmail: String) = {
+    val emailTemplate = {
+      "Someone has added a new comment to your answer to the question, "+questionTitle+"<br /><br /><a href='"+DOMAIN+"#/question"+questionId+"'>VIEW NOW</a>"
+    }
+
+    sendEmail("New comment", emailTemplate, toEmail)
   }
 
   def sendRegistrationConfirmEmail(user: UserAccountsRow) = {

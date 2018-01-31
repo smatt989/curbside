@@ -1,8 +1,7 @@
 package com.example.app.models
 
-import com.example.app.UpdatableUUIDObject
+import com.example.app.{AppGlobals, MailJetSender, UpdatableUUIDObject}
 import com.example.app.db.Tables.{Answers, AnswersRow}
-import com.example.app.AppGlobals
 import AppGlobals.dbConfig.driver.api._
 import org.joda.time.DateTime
 
@@ -53,6 +52,16 @@ object Answer extends UpdatableUUIDObject[AnswersRow, Answers]{
 
   def toggleActiveStatus(id: String, status: Boolean) =
     db.run(table.filter(_.answerId === id).map(_.isActive).update(status))
+
+  def sendEmailToSubscribers(newAnswer: AnswersRow) = {
+
+    val question = Await.result(Question.byId(newAnswer.questionId), Duration.Inf)
+    val userEmail = Await.result(User.byId(question.creatorId), Duration.Inf)
+
+    if(question.creatorId != newAnswer.creatorId){
+      MailJetSender.newAnswerAdded(question.questionTitle, question.questionId, userEmail.email)
+    }
+  }
 }
 
 case class AnswerCreateObject(id: Option[String], questionId: String, text: String) {

@@ -1,8 +1,7 @@
 package com.example.app.models
 
-import com.example.app.UpdatableUUIDObject
+import com.example.app.{AppGlobals, MailJetSender, UpdatableUUIDObject}
 import com.example.app.db.Tables.{Comments, CommentsRow}
-import com.example.app.AppGlobals
 import AppGlobals.dbConfig.driver.api._
 import org.joda.time.DateTime
 
@@ -56,6 +55,37 @@ object Comment extends UpdatableUUIDObject[CommentsRow, Comments]{
 
   def toggleActiveStatus(id: String, status: Boolean) =
     db.run(table.filter(_.commentId === id).map(_.isActive).update(status))
+
+  def sendEmailToSubscribers(newComment: CommentsRow) = {
+    //comment on answer
+    if(newComment.answerId.isDefined){
+      val answer = Await.result(Answer.byId(newComment.answerId.get), Duration.Inf)
+      val question = Await.result(Question.byId(answer.questionId), Duration.Inf)
+      val otherComments = Await.result(byAnswerIds(Seq(answer.answerId)), Duration.Inf)
+      val usersToNotify = otherComments.filter(_.creatorId != newComment.creatorId).map(_.creatorId).distinct
+      val userEmails = Await.result(User.byIds(usersToNotify :+ answer.creatorId), Duration.Inf).map(u => u.userAccountId -> u.email).toMap
+
+      MailJetSender.newAnswerCommentOtherCommenters(question.questionTitle, question.questionId, usersToNotify.map(userEmails))
+
+      if(newComment.creatorId != answer.creatorId){
+        MailJetSender.newAnswerCommentAnswerAuthor(question.questionTitle, question.questionId, userEmails(answer.creatorId))
+      }
+
+      //comment on question
+    } else {
+
+      val question = Await.result(Question.byId(newComment.questionId.get), Duration.Inf)
+      val otherComments = Await.result(byQuestionIds(Seq(question.questionId)), Duration.Inf)
+      val usersToNotify = otherComments.filter(_.creatorId != newComment.creatorId).map(_.creatorId).distinct
+      val userEmails = Await.result(User.byIds(usersToNotify :+ question.creatorId), Duration.Inf).map(u => u.userAccountId -> u.email).toMap
+
+      MailJetSender.newQuestionCommentOtherCommenters(question.questionTitle, question.questionId, usersToNotify.map(userEmails))
+
+      if(newComment.creatorId != question.creatorId) {
+        MailJetSender.newQuestionCommentQuestionAuthor(question.questionTitle, question.questionId, userEmails(question.creatorId))
+      }
+    }
+  }
 }
 
 case class CommentCreateObject(id: Option[String], questionId: Option[String], answerId: Option[String], text: String) {
