@@ -13,7 +13,7 @@ import {
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
-import { getQuestion, getQuestionSuccess, getQuestionError, createQuestionView, createQuestionViewSuccess, createQuestionViewError, deleteQuestion, deleteQuestionSuccess, deleteQuestionError } from '../../actions.js';
+import { getQuestion, getQuestionSuccess, getQuestionError, createQuestionView, createQuestionViewSuccess, createQuestionViewError, deleteQuestion, deleteQuestionSuccess, deleteQuestionError, cleanQuestion } from '../../actions.js';
 import { tryLogin, dispatchPattern } from '../../utilities.js';
 import NavBar from '../NavBar.jsx';
 import InfoBox from '../feed/InfoBox.jsx';
@@ -37,6 +37,7 @@ class FullQuestion extends React.Component {
   }
 
   componentDidMount() {
+    this.props.cleanQuestion()
     const questionId = this.getQuestionId()
     this.props.getQuestion(questionId)
     this.props.createQuestionView(questionId)
@@ -70,34 +71,43 @@ class FullQuestion extends React.Component {
                     </div>
     }
 
+
+    var questionBody = <div></div>
+    
+    if(this.props.question.get('question')) {
+        questionBody = <div>
+                           <h2 className="question-header m-b-3">{question.getIn(['question', 'question', 'title'], '')}</h2>
+                           <div className="question-item">
+                               <div className="col-md-1">
+                                   <InfoBox major={question.getIn(['question', 'viewCount'], 0)} minor={"views"} />
+                               </div>
+                               <div className="col-md-11">
+                                   <div className="question-body">
+                                       <p>
+                                           {question.getIn(['question', 'question', 'text'], '')}
+                                       </p>
+                                   </div>
+                                   {actionBox}
+                                   <div className="poster-box">
+                                       <p className="info-text">Last updated by <b>{question.getIn(['question', 'question', 'creatorName'])}</b> on {new Date(question.getIn(['question', 'question', 'updatedMillis'], 0)).toDateString()}</p>
+                                   </div>
+                                   <div className="comments">
+                                       <CommentsListContainer comments={question.getIn(['question', 'comments'], List.of())} refresh={refresh} questionId={questionId} />
+                                   </div>
+                               </div>
+                           </div>
+                           <div>
+                               <h4>Answers</h4>
+                               <AnswersListContainer refresh={refresh} questionId={questionId} />
+                           </div>
+                        </div>
+    }
+
     return (
       <div >
         <NavBar inverse={false} />
         <Grid>
-            <h2 className="question-header m-b-3">{question.getIn(['question', 'question', 'title'], '')}</h2>
-            <div className="question-item">
-                <div className="col-md-1">
-                    <InfoBox major={question.getIn(['question', 'viewCount'], 0)} minor={"views"} />
-                </div>
-                <div className="col-md-11">
-                    <div className="question-body">
-                        <p>
-                            {question.getIn(['question', 'question', 'text'], '')}
-                        </p>
-                    </div>
-                    {actionBox}
-                    <div className="poster-box">
-                        <p className="info-text">Last updated by <b>{question.getIn(['question', 'question', 'creatorName'])}</b> on {new Date(question.getIn(['question', 'question', 'updatedMillis'], 0)).toDateString()}</p>
-                    </div>
-                    <div className="comments">
-                        <CommentsListContainer comments={question.getIn(['question', 'comments'], List.of())} refresh={refresh} questionId={questionId} />
-                    </div>
-                </div>
-            </div>
-            <div>
-                <h4>Answers</h4>
-                <AnswersListContainer refresh={refresh} questionId={questionId} />
-            </div>
+            {questionBody}
         </Grid>
       </div>
 
@@ -125,7 +135,8 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     getQuestion: getQuestionFunction,
     createQuestionView: dispatchPattern(createQuestionView, createQuestionViewSuccess, createQuestionViewError, createQuestionViewCallback),
-    deleteQuestion: deleteQuestionCallback
+    deleteQuestion: deleteQuestionCallback,
+    cleanQuestion: () => dispatch(cleanQuestion())
   };
 };
 

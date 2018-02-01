@@ -622,3 +622,9 @@ export function questionsCreatedError(error) {
     error: error
   };
 }
+
+export function cleanQuestion(){
+  return {
+    type: 'CLEAN_QUESTION'
+  }
+}

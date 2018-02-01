@@ -81,7 +81,7 @@ class NewQuestion extends React.Component {
                       <b>Title:</b>
                     </Col>
                     <Col sm={11}>
-                      <FormControl onChange={this.changeTitle} type="text" value={this.state.title} placeholder="What's your medial question?" />
+                      <FormControl onChange={this.changeTitle} type="text" value={this.state.title} placeholder="What's your medical question?" />
                     </Col>
 
 

@@ -322,6 +322,10 @@ function questionsCreatedError(state, error) {
   return state.set('questionsCreated', Map({questions: List.of(), loading: false, error: error}));
 }
 
+function cleanQuestion(state){
+  return state.set('getQuestion', Map({question: null, loading: false, error: null}));
+}
+
 export default function reducer(state = Map(), action) {
   switch (action.type) {
     case 'CLEAN_STATE':
@@ -448,6 +452,8 @@ export default function reducer(state = Map(), action) {
       return questionsCreatedSuccess(state, action.payload);
     case 'QUESTIONS_CREATED_ERROR':
       return questionsCreatedError(state, action.error);
+    case 'CLEAN_QUESTION':
+      return cleanQuestion(state);
     default:
       return state;
   }
