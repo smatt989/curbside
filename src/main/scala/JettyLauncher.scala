@@ -1,6 +1,7 @@
 import com.example.app.SlickApp
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.webapp.WebAppContext
+import org.scalatra.ScalatraBase
 import org.scalatra.servlet.ScalatraListener
 
 object JettyLauncher {
@@ -14,6 +15,7 @@ object JettyLauncher {
     context.setContextPath("/")
     context.setResourceBase("src/main/webapp")
     context.setInitParameter(org.scalatra.EnvironmentKey, PRODUCTION)
+    context.setInitParameter(ScalatraBase.ForceHttpsKey, "true")
     context.addServlet(classOf[SlickApp], "/*")
 
     context.setEventListeners(Array(new ScalatraListener))
