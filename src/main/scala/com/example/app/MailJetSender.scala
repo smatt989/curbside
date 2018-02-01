@@ -37,7 +37,6 @@ object MailJetSender {
     println("sending")
     val response = mailjetClient.post(request)
     System.out.println(response.getData());
-    println("sent")
   }
 
 
