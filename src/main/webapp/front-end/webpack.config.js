@@ -54,6 +54,6 @@ module.exports = {
   },
   devServer: {
     contentBase: './dist',
-    publicPath: '/'
+    publicPath: '/front-end/dist/'
   }
 };
