@@ -73,7 +73,7 @@ class FullQuestion extends React.Component {
 
 
     var questionBody = <div></div>
-    
+
     if(this.props.question.get('question')) {
         questionBody = <div>
                            <h2 className="question-header m-b-3">{question.getIn(['question', 'question', 'title'], '')}</h2>

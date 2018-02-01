@@ -27,4 +27,8 @@ trait AppRoutes extends SlickRoutes with AuthenticationSupport{
       </html>
   }
 
+  get("/.well-known/acme-challenge/wwj7_foOCQxB8G4sacJFZ7XZnjapPBoDn0p8BRMvbBg") {
+    "wwj7_foOCQxB8G4sacJFZ7XZnjapPBoDn0p8BRMvbBg.HWkwREtv33D2TmZYw0bDSKTUQ8Pg9AqpQXfm2ta0XwM"
+  }
+
 }
