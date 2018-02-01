@@ -4,7 +4,7 @@
       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
       version="3.0">
 
-  <security-constraint>
+  <!--<security-constraint>
     <web-resource-collection>
       <web-resource-name>Everything in the webapp</web-resource-name>
       <url-pattern>/*</url-pattern>
@@ -12,7 +12,7 @@
     <user-data-constraint>
       <transport-guarantee>CONFIDENTIAL</transport-guarantee>
     </user-data-constraint>
-  </security-constraint>
+  </security-constraint>-->
 
   <!--
     This listener loads a class in the default package called ScalatraBootstrap.
