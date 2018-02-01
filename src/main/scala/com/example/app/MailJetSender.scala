@@ -16,8 +16,9 @@ import scala.concurrent.duration.Duration
 object MailJetSender {
 
   val mailjetClient = new MailjetClient(System.getenv("MAIL_JET_PUBLIC_KEY"), System.getenv("MAIL_JET_SECRET_KEY"))
-  val fromEmail = "DrCurbside@gmail.com"
-  val fromName = "DrCurbside"
+
+  val fromEmail = sys.env.get("SENDER_EMAIL").getOrElse("DrCurbside@gmail.com")
+  val fromName = sys.env.get("SENDER_NAME").getOrElse("DrCurbside")
 
   val DOMAIN = sys.env.get("DOMAIN").getOrElse(s"http://localhost:8080/")
 
