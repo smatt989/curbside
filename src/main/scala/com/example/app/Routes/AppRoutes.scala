@@ -8,6 +8,18 @@ trait AppRoutes extends SlickRoutes with AuthenticationSupport{
 
 
   get("/") {
+
+    val url = request.getRequestURL.toString
+    println("checking... "+url)
+
+    if(url.startsWith("http://")){
+      println("redirecting...")
+      response.redirect("https://"+url.split("http://")(1))
+    } else if (!url.startsWith("https://")){
+      println("a different redirect")
+      response.redirect("https://"+url)
+    }
+
     val authenticated = new CookieStrategy(this).checkAuthentication()
     val registered = authenticated.map(_.registered).getOrElse(false)
 

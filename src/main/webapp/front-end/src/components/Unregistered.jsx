@@ -27,7 +27,7 @@ class Unregistered extends React.Component {
               <div className='row'>
                 <div className='col-md-12'>
                   <h1>Thanks for signing up!</h1>
-                  <h3>You'll get an email from DrCurbside@gmail.com when we've finished confirming that you're a doctor. Hold tight!</h3>
+                  <h3>You'll get an email from resident@gmail.com when we've finished confirming that you're a doctor. Hold tight!</h3>
                 </div>
               </div>
           </div>
