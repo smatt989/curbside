@@ -15,6 +15,7 @@ import { Link, Redirect } from 'react-router-dom';
 import { saveQuestion, saveQuestionSuccess, saveQuestionError, getQuestion, getQuestionSuccess, getQuestionError } from '../../actions.js';
 import { tryLogin, dispatchPattern } from '../../utilities.js';
 import NavBar from '../NavBar.jsx';
+import QuestionTagBox from './QuestionTagBox.jsx';
 
 class NewQuestion extends React.Component {
   constructor(props) {
@@ -22,6 +23,7 @@ class NewQuestion extends React.Component {
     this.state = {
       title: '',
       body: '',
+      tags: [],
       successfulSave: false
     };
 
@@ -29,6 +31,7 @@ class NewQuestion extends React.Component {
     this.changeBody = this.changeBody.bind(this)
     this.getQuestionId = this.getQuestionId.bind(this)
     this.readQuestionFromState = this.readQuestionFromState.bind(this)
+    this.toggleTag = this.toggleTag.bind(this)
   }
 
   changeTitle(e) {
@@ -39,13 +42,28 @@ class NewQuestion extends React.Component {
     this.setState({body: e.target.value})
   }
 
+  toggleTag(id) {
+
+    var arr = this.state.tags
+
+    var index = arr.indexOf(id);
+
+    if(index >= 0){
+        arr.splice(index, 1)
+        this.setState({tags: arr})
+    } else {
+        this.setState({tags: arr.concat(id)})
+    }
+
+  }
+
   getQuestionId() {
     return this.props.match.params.id
   }
 
   readQuestionFromState() {
     const question = this.props.question.getIn(['question', 'question'])
-    this.setState({title: question.get('title'), body: question.get('text'), id: question.get('id')})
+    this.setState({title: question.get('title'), body: question.get('text'), id: question.get('id'), tags: question.get('tags').map(t => t.get('id')).toArray()})
   }
 
   componentDidMount() {
@@ -64,16 +82,19 @@ class NewQuestion extends React.Component {
     var headerText = this.state.id ? "Edit Question" : "New Question"
 
     if(this.state.successfulSave){
-        console.log()
         return <Redirect to={'/question/'+this.props.savedQuestion.getIn(['question', 'id'])} />
     }
+
+    var tags = this.state.tags
+
+    const toggleTag = this.toggleTag
 
     return (
       <div >
         <NavBar inverse={false} />
         <Grid>
             <h3>{headerText}:</h3>
-            <div>
+            <div className="question-form">
                 <Form horizontal className="col-md-8 col-md-push-2">
                   <FormGroup>
 
@@ -91,8 +112,14 @@ class NewQuestion extends React.Component {
                     <FormControl onChange={this.changeBody} value={this.state.body} componentClass="textarea" placeholder="More details..." />
                   </FormGroup>
 
+                  <Col componentClass={ControlLabel} sm={1}>
+                    <b>Tags:</b>
+                  </Col>
+                  <QuestionTagBox tags={this.props.tagChoices.get('tags')} small={true} clickFunction={toggleTag} activeIds={tags}/>
+
+                  <br />
                   <FormGroup className="text-xs-center">
-                    <Button onClick={() => this.props.saveQuestion(() => this.setState({successfulSave: true}))(this.state.title, this.state.body, this.state.id)} bsStyle="primary" disabled={disabled}>{saveText}</Button>
+                    <Button onClick={() => this.props.saveQuestion(() => this.setState({successfulSave: true}))(this.state.title, this.state.body, this.state.tags, this.state.id)} bsStyle="success" disabled={disabled}>{saveText}</Button>
                   </FormGroup>
 
                 </Form>
@@ -107,7 +134,8 @@ class NewQuestion extends React.Component {
 const mapStateToProps = state => {
   return {
     savedQuestion: state.get('saveQuestion'),
-    question: state.get('getQuestion')
+    question: state.get('getQuestion'),
+    tagChoices: state.get('tagChoices')
   };
 };
 

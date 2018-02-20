@@ -14,7 +14,7 @@ trait Tables {
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Array(Answers.schema, Comments.schema, DeviceTokens.schema, Migrations.schema, Questions.schema, QuestionViews.schema, Registrations.schema, Reviews.schema, UserAccounts.schema, UserConnections.schema, UserSessions.schema).reduceLeft(_ ++ _)
+  lazy val schema: profile.SchemaDescription = Array(Answers.schema, Comments.schema, DeviceTokens.schema, Migrations.schema, Questions.schema, QuestionTags.schema, QuestionViews.schema, Registrations.schema, Reviews.schema, UserAccounts.schema, UserConnections.schema, UserSessions.schema).reduceLeft(_ ++ _)
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
 
@@ -198,6 +198,35 @@ trait Tables {
   }
   /** Collection-like TableQuery object for table Questions */
   lazy val Questions = new TableQuery(tag => new Questions(tag))
+
+  /** Entity class storing rows of table QuestionTags
+   *  @param questionTagId Database column QUESTION_TAG_ID SqlType(VARCHAR)
+   *  @param questionId Database column QUESTION_ID SqlType(VARCHAR)
+   *  @param tagId Database column TAG_ID SqlType(INTEGER) */
+  case class QuestionTagsRow(questionTagId: String, questionId: String, tagId: Int)
+  /** GetResult implicit for fetching QuestionTagsRow objects using plain SQL queries */
+  implicit def GetResultQuestionTagsRow(implicit e0: GR[String], e1: GR[Int]): GR[QuestionTagsRow] = GR{
+    prs => import prs._
+    QuestionTagsRow.tupled((<<[String], <<[String], <<[Int]))
+  }
+  /** Table description of table QUESTION_TAGS. Objects of this class serve as prototypes for rows in queries. */
+  class QuestionTags(_tableTag: Tag) extends Table[QuestionTagsRow](_tableTag, Some("CURBSIDE"), "QUESTION_TAGS") {
+    def * = (questionTagId, questionId, tagId) <> (QuestionTagsRow.tupled, QuestionTagsRow.unapply)
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? = (Rep.Some(questionTagId), Rep.Some(questionId), Rep.Some(tagId)).shaped.<>({r=>import r._; _1.map(_=> QuestionTagsRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column QUESTION_TAG_ID SqlType(VARCHAR) */
+    val questionTagId: Rep[String] = column[String]("QUESTION_TAG_ID")
+    /** Database column QUESTION_ID SqlType(VARCHAR) */
+    val questionId: Rep[String] = column[String]("QUESTION_ID")
+    /** Database column TAG_ID SqlType(INTEGER) */
+    val tagId: Rep[Int] = column[Int]("TAG_ID")
+
+    /** Foreign key referencing Questions (database name QUESTION_TAG_TO_QUESTIONS_FK) */
+    lazy val questionsFk = foreignKey("QUESTION_TAG_TO_QUESTIONS_FK", questionId, Questions)(r => r.questionId, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Restrict)
+  }
+  /** Collection-like TableQuery object for table QuestionTags */
+  lazy val QuestionTags = new TableQuery(tag => new QuestionTags(tag))
 
   /** Entity class storing rows of table QuestionViews
    *  @param questionViewId Database column QUESTION_VIEW_ID SqlType(VARCHAR), PrimaryKey

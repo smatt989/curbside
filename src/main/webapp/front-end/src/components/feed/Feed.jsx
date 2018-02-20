@@ -85,7 +85,7 @@ class Feed extends React.Component {
 
 
     return (
-        <FeedElement feed={feed} handleQueryUpdate={this.handleQueryUpdate} queryValue={this.state.query} goToSearch={this.goToSearch}/>
+        <FeedElement feed={feed} handleQueryUpdate={this.handleQueryUpdate} queryValue={this.state.query} goToSearch={this.goToSearch} tags={this.props.tagChoices.get('tags')}/>
 
     );
   }
@@ -93,7 +93,8 @@ class Feed extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    questionFeed: state.get('questionFeed')
+    questionFeed: state.get('questionFeed'),
+    tagChoices: state.get('tagChoices')
   };
 };
 

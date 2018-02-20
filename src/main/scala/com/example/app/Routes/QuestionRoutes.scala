@@ -30,6 +30,21 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
     }
   }
 
+  get("/questions/tags/:id") {
+    contentType = formats("json")
+    authenticate()
+
+    val userId = user.userAccountId
+
+    val tagId = {params("id")}.toInt
+
+    if(registered()){
+      Question.questionsByQuestionTagId(tagId, userId)
+    } else {
+      throw new AuthenticationException("Not registered")
+    }
+  }
+
   get("/questions/:questionId") {
     contentType = formats("json")
     authenticate()
@@ -98,6 +113,7 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
 
     if(registered() && Question.authorizedToEditQuestion(questionRequest, userId)){
       val saved = Await.result(Question.save(questionRequest.toRow(userId)), Duration.Inf)
+      Await.result(QuestionTag.saveQuestionTags(saved.questionId, questionRequest.tags), Duration.Inf)
       //Question.sendEmailToSubscribers(saved)
       EmailManager.emailActor ! saved
       Question.manyToJson(userId, Seq(saved)).head
@@ -220,4 +236,14 @@ trait QuestionRoutes extends SlickRoutes with AuthenticationSupport with Registe
     }
   }
 
+  get("/tags") {
+    contentType = formats("json")
+    authenticate()
+
+    if(registered()){
+      QuestionTag.tags
+    } else {
+      throw new AuthenticationException("Not registered")
+    }
+  }
 }

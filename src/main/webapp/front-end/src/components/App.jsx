@@ -17,6 +17,7 @@ import FullQuestionContainer from './question_forms/FullQuestion.jsx';
 import EditAnswerContainer from './question_forms/EditAnswer.jsx';
 import SearchResultsContainer from './feed/SearchResults.jsx';
 import CreatedQuestionsContainer from './feed/CreatedQuestions.jsx';
+import TagQuestionsContainer from './feed/TagQuestions.jsx';
 import Unregistered from './Unregistered.jsx';
 import Err from './Error.jsx';
 
@@ -33,10 +34,11 @@ export default class App extends React.Component {
           <Route exact path="/unregistered" component={Unregistered}/>
           <PrivateRouteContainer path="/search/:query" component={SearchResultsContainer}/>
           <PrivateRouteContainer path="/questions/created" component={CreatedQuestionsContainer}/>
+          <PrivateRouteContainer path="/questions/tags/:id" component={TagQuestionsContainer}/>
           <PrivateRouteContainer path="/questions/new" component={NewQuestionContainer}/>
-          <PrivateRouteContainer path="/question/:id" component={FullQuestionContainer}/>
           <PrivateRouteContainer path="/question/:id/edit" component={NewQuestionContainer}/>
           <PrivateRouteContainer path="/question/:qid/answers/:aid" component={EditAnswerContainer}/>
+          <PrivateRouteContainer path="/question/:id" component={FullQuestionContainer}/>
           <Route component={Err}/>
         </Switch>
       </div>

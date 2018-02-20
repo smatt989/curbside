@@ -36,7 +36,9 @@ function cleanState() {
     deleteComment: Map({loading: false, error: null}),
     questionSearch: Map({results: List.of(), loading: false, error: null}),
     validateUsername: Map({validation: null, loading: false, error: null}),
-    questionsCreated: Map({questions: List.of(), loading: false, error: null})
+    questionsCreated: Map({questions: List.of(), loading: false, error: null}),
+    tagChoices: Map({tags: List.of(), loading: false, error: null}),
+    questionsByTag: Map({questions: List.of(), loading: false, error: null})
   });
 
   return cleanState;
@@ -326,6 +328,30 @@ function cleanQuestion(state){
   return state.set('getQuestion', Map({question: null, loading: false, error: null}));
 }
 
+function getTagChoices(state) {
+  return state.set('tagChoices', Map({tags: List.of(), loading: true, error: null}));
+}
+
+function getTagChoicesSuccess(state, tags) {
+  return state.set('tagChoices', Map({tags: Immutable.fromJS(tags), loading: false, error: null}));
+}
+
+function getTagChoicesError(state, error) {
+  return state.set('tagChoices', Map({tags: List.of(), loading: false, error: error}));
+}
+
+function questionsByTag(state){
+  return state.set('questionsByTag', Map({questions: List.of(), loading: true, error: null}));
+}
+
+function questionsByTagSuccess(state, questions) {
+  return state.set('questionsByTag', Map({questions: Immutable.fromJS(questions), loading: false, error: null}));
+}
+
+function questionsByTagError(state, error) {
+  return state.set('questionsByTag', Map({questions: List.of(), loading: false, error: error}));
+}
+
 export default function reducer(state = Map(), action) {
   switch (action.type) {
     case 'CLEAN_STATE':
@@ -454,6 +480,18 @@ export default function reducer(state = Map(), action) {
       return questionsCreatedError(state, action.error);
     case 'CLEAN_QUESTION':
       return cleanQuestion(state);
+    case 'GET_TAG_CHOICES':
+      return getTagChoices(state);
+    case 'GET_TAG_CHOICES_SUCCESS':
+      return getTagChoicesSuccess(state, action.payload);
+    case 'GET_TAG_CHOICES_ERROR':
+      return getTagChoicesError(state, action.error);
+    case 'QUESTIONS_BY_TAG':
+      return questionsByTag(state);
+    case 'QUESTIONS_BY_TAG_SUCCESS':
+      return questionsByTagSuccess(state, action.payload);
+    case 'QUESTIONS_BY_TAG_ERROR':
+      return questionsByTagError(state, action.error);
     default:
       return state;
   }

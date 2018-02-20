@@ -19,6 +19,7 @@ import NavBar from '../NavBar.jsx';
 import InfoBox from '../feed/InfoBox.jsx';
 import CommentsListContainer from './CommentsList.jsx';
 import AnswersListContainer from './AnswersList.jsx';
+import QuestionTagBox from './QuestionTagBox.jsx';
 
 class FullQuestion extends React.Component {
   constructor(props) {
@@ -87,6 +88,7 @@ class FullQuestion extends React.Component {
                                            {question.getIn(['question', 'question', 'text'], '')}
                                        </p>
                                    </div>
+                                   <QuestionTagBox tags={question.getIn(['question', 'question', 'tags'])} clickFunction={function(){}} activeIds={[]} small={true} linkToQuestions={true}/>
                                    {actionBox}
                                    <div className="poster-box">
                                        <p className="info-text">Last updated by <b>{question.getIn(['question', 'question', 'creatorName'])}</b> on {new Date(question.getIn(['question', 'question', 'updatedMillis'], 0)).toDateString()}</p>

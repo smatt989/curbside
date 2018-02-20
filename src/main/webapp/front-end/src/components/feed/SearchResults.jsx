@@ -66,7 +66,7 @@ class SearchResults extends React.Component {
 
 
     return (
-        <FeedElement feed={feed} handleQueryUpdate={this.handleQueryUpdate} queryValue={this.state.query} goToSearch={this.goToSearch}/>
+        <FeedElement feed={feed} handleQueryUpdate={this.handleQueryUpdate} queryValue={this.state.query} goToSearch={this.goToSearch} tags={this.props.tagChoices.get('tags')}/>
 
     );
   }
@@ -74,7 +74,8 @@ class SearchResults extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    searchFeed: state.get('questionSearch')
+    searchFeed: state.get('questionSearch'),
+    tagChoices: state.get('tagChoices')
   };
 };
 

@@ -10,36 +10,57 @@ import {
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
-import { questionsCreated, questionsCreatedSuccess, questionsCreatedError } from '../../actions.js';
+import { questionsByTag, questionsByTagSuccess, questionsByTagError } from '../../actions.js';
 import { tryLogin, dispatchPattern } from '../../utilities.js';
 import NavBar from '../NavBar.jsx';
 import Question from './Question.jsx';
 import FeedElement from './FeedElement.jsx';
 
-class CreatedQuestions extends React.Component {
+class TagQuestions extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       loading: false,
       query: '',
-      goToSearch: false
+      goToSearch: false,
+      needsRefresh: true,
+      tagId: null
     };
 
     this.handleQueryUpdate = this.handleQueryUpdate.bind(this);
     this.goToSearch = this.goToSearch.bind(this);
     this.getFeedItems = this.getFeedItems.bind(this);
+    this.getTagId = this.getTagId.bind(this);
+    this.tagClick = this.tagClick.bind(this);
   }
 
   componentDidMount() {
     this.getFeedItems()
   }
 
+  componentDidUpdate() {
+    this.getFeedItems()
+  }
+
   getFeedItems() {
-    this.props.createdQuestions()
+    if(this.state.needsRefresh) {
+        const tagId = this.getTagId()
+        this.setState({tagId: tagId})
+        this.props.fetchQuestionsByTag(tagId)
+        this.setState({needsRefresh: false});
+    }
+  }
+
+  tagClick() {
+    this.setState({needsRefresh: true})
   }
 
   handleQueryUpdate(e) {
     this.setState({query: e.target.value})
+  }
+
+  getTagId() {
+    return parseInt(this.props.match.params.id)
   }
 
   goToSearch(){
@@ -49,8 +70,7 @@ class CreatedQuestions extends React.Component {
   }
 
   render() {
-
-    var feed = this.props.myQuestions.get('questions')
+    var feed = this.props.questionsByTag.get('questions')
 
     if(this.state.goToSearch){
         return <Redirect to={"/search/"+this.state.query} />
@@ -58,7 +78,7 @@ class CreatedQuestions extends React.Component {
 
 
     return (
-        <FeedElement feed={feed} handleQueryUpdate={this.handleQueryUpdate} queryValue={this.state.query} goToSearch={this.goToSearch} tags={this.props.tagChoices.get('tags')}/>
+        <FeedElement feed={feed} handleQueryUpdate={this.handleQueryUpdate} queryValue={this.state.query} goToSearch={this.goToSearch} tags={this.props.tagChoices.get('tags')} activeTags={[this.getTagId()]} tagClick={this.tagClick} />
 
     );
   }
@@ -66,20 +86,20 @@ class CreatedQuestions extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    myQuestions: state.get('questionsCreated'),
+    questionsByTag: state.get('questionsByTag'),
     tagChoices: state.get('tagChoices')
   };
 };
 
 const mapDispatchToProps = (dispatch, ownProps) => {
   return {
-    createdQuestions: dispatchPattern(questionsCreated, questionsCreatedSuccess, questionsCreatedError)
+    fetchQuestionsByTag: dispatchPattern(questionsByTag, questionsByTagSuccess, questionsByTagError)
   };
 };
 
-const CreatedQuestionsContainer = connect(
+const TagQuestionsContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(CreatedQuestions);
+)(TagQuestions);
 
-export default CreatedQuestionsContainer;
+export default TagQuestionsContainer;

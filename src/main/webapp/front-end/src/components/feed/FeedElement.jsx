@@ -11,8 +11,9 @@ import {
 import { Link, Redirect } from 'react-router-dom';
 import NavBar from '../NavBar.jsx';
 import Question from './Question.jsx'
+import QuestionTagBox from '../question_forms/QuestionTagBox.jsx';
 
-const FeedElement = ({ feed, handleQueryUpdate, queryValue, goToSearch }) => {
+const FeedElement = ({ feed, handleQueryUpdate, queryValue, goToSearch, tags, activeTags, tagClick }) => {
 
   const onEnter = (e) => {
     var code = (e.keyCode ? e.keyCode : e.which);
@@ -21,10 +22,13 @@ const FeedElement = ({ feed, handleQueryUpdate, queryValue, goToSearch }) => {
     }
   }
 
+  var activeIds = activeTags ? activeTags : []
+
   return (
                   <div >
                     <NavBar inverse={false} />
                     <Grid>
+                        <QuestionTagBox tags={tags} clickFunction={tagClick} activeIds={activeIds} small={true} linkToQuestions={true} />
                         <h3 className="col-md-3">Questions:</h3>
                         <FormGroup className="col-md-5">
                           <InputGroup>

@@ -1,5 +1,5 @@
 import {createStore, applyMiddleware} from 'redux';
-import { cleanState, ontologyTypes, ontologyTypesSuccess, ontologyTypesError, imageSourceTypes, imageSourceTypesSuccess, imageSourceTypesError } from './actions';
+import { cleanState, getTagChoices, getTagChoicesSuccess, getTagChoicesError } from './actions';
 import reducer from './reducer';
 import promise from 'redux-promise';
 
@@ -17,5 +17,18 @@ const store = initStore();
 export default store;
 
 function fetchReferenceData(store) {
-    //PUT CALLS IN HERE TO MAKE AT STARTUP
+    fetchTagTypes(store)
+}
+
+function fetchTagTypes(store) {
+    store.dispatch(getTagChoices())
+                .then(response => {
+                    if(response.error) {
+                        store.dispatch(getTagChoicesError(response.error));
+                        return false;
+                    }
+
+                    store.dispatch(getTagChoicesSuccess(response.payload.data));
+                    return true;
+                });
 }

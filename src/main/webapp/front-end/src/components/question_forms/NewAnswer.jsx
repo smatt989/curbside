@@ -61,7 +61,7 @@ class NewAnswer extends React.Component {
             <FormGroup>
                 <FormControl onChange={this.changeText} value={text} componentClass="textarea" placeholder="Start your answer..." />
             </FormGroup>
-            <Button disabled={disabled} onClick={() => this.props.saveAnswer(this.clearText)(text, questionId, answerId)} bsStyle="primary" className="col-md-2">{saveText}</Button>
+            <Button disabled={disabled} onClick={() => this.props.saveAnswer(this.clearText)(text, questionId, answerId)} bsStyle="success" className="col-md-2">{saveText}</Button>
         </Form>
       </div>
 

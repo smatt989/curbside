@@ -1,6 +1,6 @@
 package com.example.app.models
 
-import com.example.app.{AppGlobals, MailJetSender, UpdatableUUIDObject}
+import com.example.app.{AppGlobals, MailJetSender, QuestionTag, UpdatableUUIDObject}
 import com.example.app.db.Tables.{Questions, QuestionsRow}
 import AppGlobals.dbConfig.driver.api._
 import org.joda.time.DateTime
@@ -28,13 +28,14 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
   def idColumnFromTable(a: _root_.com.example.app.db.Tables.Questions) =
     a.questionId
 
-  def toJson(userId: Int, question: QuestionsRow, creatorName: String) =
-    QuestionJson(question.questionId, question.questionTitle, question.questionText, question.createdMillis, question.updatedMillis, userId == question.creatorId, creatorName, question.isActive)
+  def toJson(userId: Int, question: QuestionsRow, creatorName: String, tags: Seq[QuestionTag]) =
+    QuestionJson(question.questionId, question.questionTitle, question.questionText, tags, question.createdMillis, question.updatedMillis, userId == question.creatorId, creatorName, question.isActive)
 
   def manyToJson(userId: Int, questions: Seq[QuestionsRow]) = {
     val users = Await.result(User.byIds(questions.map(_.creatorId).distinct), Duration.Inf)
     val usersById = users.map(u => u.userAccountId -> u.username).toMap
-    questions.map(q => toJson(userId, q, usersById(q.creatorId)))
+    val tags = QuestionTag.byQuestionIds(questions.map(_.questionId))
+    questions.map(q => toJson(userId, q, usersById(q.creatorId), tags.getOrElse(q.questionId, Nil).map(QuestionTag.toJson)))
   }
 
 
@@ -43,6 +44,8 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
     val reviews = Await.result(Review.byAnswerIds(answers.map(_.answerId)), Duration.Inf)
     val questionComments = Await.result(Comment.byQuestionIds(questions.map(_.questionId)), Duration.Inf).filter(_.isActive)
     val answerComments = Await.result(Comment.byAnswerIds(answers.map(_.answerId)), Duration.Inf).filter(_.isActive)
+
+    val questionTags = QuestionTag.byQuestionIds(questions.map(_.questionId))
 
     val userIds = answers.map(_.creatorId) ++ questions.map(_.creatorId) ++ questionComments.map(_.creatorId) ++ answerComments.map(_.creatorId)
 
@@ -68,7 +71,12 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
         AnswerFull(Answer.toJson(userId, a, usernameById(a.creatorId)), acs.map(c => Comment.toJson(userId, c, usernameById(c.creatorId))), rs.map(Review.toJson), score)
       }).sortBy(_.score).reverse
 
-      QuestionFull(Question.toJson(userId, q, usernameById(q.creatorId)), fullAnswers, qcs.map(c => Comment.toJson(userId, c, usernameById(c.creatorId))), questionViews(q.questionId))
+      QuestionFull(
+        Question.toJson(userId, q, usernameById(q.creatorId), questionTags.getOrElse(q.questionId, Nil).map(QuestionTag.toJson)),
+        fullAnswers,
+        qcs.map(c => Comment.toJson(userId, c, usernameById(c.creatorId))),
+        questionViews(q.questionId)
+      )
     })
   }
 
@@ -135,6 +143,18 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
     fullQuestionsFromQuestionRows(resultQuestions, userId)
   }
 
+  //WILL GRAB ALL QUESTIONS WITH A GIVEN TAG --> NOT EFFECTIVE AT HIGH QUESTION SIZE
+  def questionsByQuestionTagId(tagId: Int, userId: Int) = {
+    val results = Await.result(db.run(
+      (for {
+        questions <- table
+        tags <- QuestionTag.table.filter(_.tagId === tagId) if tags.questionId === questions.questionId
+      } yield (questions)).result
+    ), Duration.Inf)
+
+    fullQuestionsFromQuestionRows(results, userId)
+  }
+
   def sendEmailToSubscribers(newQuestion: QuestionsRow) = {
 
     val commentors = Await.result(Comment.byQuestionIds(Seq(newQuestion.questionId)), Duration.Inf)
@@ -148,7 +168,7 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
   }
 }
 
-case class QuestionCreateObject(id: Option[String], title: String, text: String) {
+case class QuestionCreateObject(id: Option[String], title: String, text: String, tags: Seq[Int] = Nil) {
   def toRow(creatorId: Int) = {
     val now = DateTime.now().getMillis
     QuestionsRow(id.getOrElse(null), creatorId, title, text, true, now, now)
@@ -157,7 +177,7 @@ case class QuestionCreateObject(id: Option[String], title: String, text: String)
 
 case class QuestionDeleteObject(id: String)
 
-case class QuestionJson(id: String, title: String, text: String, createdMillis: Long, updatedMillis: Long, isCreator: Boolean, creatorName: String, isActive: Boolean)
+case class QuestionJson(id: String, title: String, text: String, tags: Seq[QuestionTag], createdMillis: Long, updatedMillis: Long, isCreator: Boolean, creatorName: String, isActive: Boolean)
 
 case class QuestionFull(question: QuestionJson, answers: Seq[AnswerFull], comments: Seq[CommentJson], viewCount: Int)
 

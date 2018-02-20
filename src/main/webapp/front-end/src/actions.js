@@ -241,8 +241,8 @@ export function getCreatedQuestionFeedError(error) {
   };
 }
 
-export function saveQuestion(title, text, id) {
-  var obj = {title: title, text: text}
+export function saveQuestion(title, text, tags, id) {
+  var obj = {title: title, text: text, tags: tags}
   if(id) {
     obj['id'] = id
   }
@@ -627,4 +627,62 @@ export function cleanQuestion(){
   return {
     type: 'CLEAN_QUESTION'
   }
+}
+
+export function getTagChoices() {
+
+  const request = axios({
+    method: 'get',
+    url: `${domain}/tags`,
+    headers: authenticate()
+  });
+
+  return {
+    type: 'GET_TAG_CHOICES',
+    payload: request
+  };
+
+}
+
+export function getTagChoicesSuccess(loaded) {
+  return {
+    type: 'GET_TAG_CHOICES_SUCCESS',
+    payload: loaded
+  };
+}
+
+export function getTagChoicesError(error) {
+  return {
+    type: 'GET_TAG_CHOICES_ERROR',
+    error: error
+  };
+}
+
+export function questionsByTag(tagId) {
+
+  const request = axios({
+    method: 'get',
+    url: `${domain}/questions/tags/${tagId}`,
+    headers: authenticate()
+  });
+
+  return {
+    type: 'QUESTIONS_BY_TAG',
+    payload: request
+  };
+
+}
+
+export function questionsByTagSuccess(loaded) {
+  return {
+    type: 'QUESTIONS_BY_TAG_SUCCESS',
+    payload: loaded
+  };
+}
+
+export function questionsByTagError(error) {
+  return {
+    type: 'QUESTIONS_BY_TAG_ERROR',
+    error: error
+  };
 }
