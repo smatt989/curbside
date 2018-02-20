@@ -150,7 +150,7 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
         questions <- table
         tags <- QuestionTag.table.filter(_.tagId === tagId) if tags.questionId === questions.questionId
       } yield (questions)).result
-    ), Duration.Inf)
+    ), Duration.Inf).sortBy(_.createdMillis).reverse
 
     fullQuestionsFromQuestionRows(results, userId)
   }
