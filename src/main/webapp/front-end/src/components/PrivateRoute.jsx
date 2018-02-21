@@ -18,6 +18,19 @@ const PrivateRoute = ({ component: Component, isAuthenticated, isRegistered, pat
   )}/>;
 };
 
+const HomeRoute = ({component: Component, isAuthenticated, isRegistered, path}) => {
+    return <Route path={path} render={props => (
+        !(isAuthenticated && isRegistered) ? (
+            <Component {...props} />
+        ) : (
+            <Redirect to={{
+                pathname: '/feed',
+                state: { from: props.location }
+            }}/>
+        )
+    )}/>;
+};
+
 const mapStateToProps = state => {
   return {
     isAuthenticated: state.getIn(['login', 'session']) != null,
@@ -25,8 +38,12 @@ const mapStateToProps = state => {
   };
 };
 
-const PrivateRouteContainer = connect(
+export const PrivateRouteContainer = connect(
   mapStateToProps
 )(PrivateRoute);
 
-export default PrivateRouteContainer;
+//export default PrivateRouteContainer;
+
+export const HomeRouteContainer = connect(
+    mapStateToProps
+)(HomeRoute);

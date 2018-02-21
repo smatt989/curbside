@@ -24,6 +24,11 @@ const FeedElement = ({ feed, handleQueryUpdate, queryValue, goToSearch, tags, ac
 
   var activeIds = activeTags ? activeTags : []
 
+  var noItems = <div><h2>Oh no!  No questions yet :(</h2></div>
+  var itemList = feed.size == 0 ? noItems : <ListGroup componentClass="ul" className="feed-ul">
+                                                                            {feed.map(q => <Question key={q.getIn(['question', 'id'])} question={q} />)}
+                                                                        </ListGroup>
+
   return (
                   <div >
                     <NavBar inverse={false} />
@@ -40,9 +45,7 @@ const FeedElement = ({ feed, handleQueryUpdate, queryValue, goToSearch, tags, ac
                         </FormGroup>
                         <Link to="/questions/new"><Button className="col-md-2 col-md-push-2" bsStyle="success">New Question</Button></Link>
                         <div className="col-md-12">
-                            <ListGroup componentClass="ul" className="feed-ul">
-                                {feed.map(q => <Question key={q.getIn(['question', 'id'])} question={q} />)}
-                            </ListGroup>
+                            {itemList}
                         </div>
                     </Grid>
                   </div>
