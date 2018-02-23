@@ -136,7 +136,7 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
 
     val uq = queries.tail.foldLeft(queries.head)((a, b) => (q: Questions) => a(q) || b(q))
 
-    val results = Await.result(db.run(table.filter(a => uq(a)).result), Duration.Inf)
+    val results = Await.result(db.run(table.filter(a => a.isActive && uq(a)).result), Duration.Inf)
 
     val resultQuestions = results.sortBy(a => a.questionTitle.split(" ").intersect(tokens).length).reverse.take(50)
 
@@ -147,7 +147,7 @@ object Question extends UpdatableUUIDObject[QuestionsRow, Questions] {
   def questionsByQuestionTagId(tagId: Int, userId: Int) = {
     val results = Await.result(db.run(
       (for {
-        questions <- table
+        questions <- table.filter(_.isActive)
         tags <- QuestionTag.table.filter(_.tagId === tagId) if tags.questionId === questions.questionId
       } yield (questions)).result
     ), Duration.Inf).sortBy(_.createdMillis).reverse
