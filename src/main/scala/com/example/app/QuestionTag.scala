@@ -67,7 +67,9 @@ object QuestionTag extends SlickUUIDObject[QuestionTagsRow, QuestionTags]{
     QuestionTag(23, "Pain Medicine"),
     QuestionTag(24, "Radiology"),
     QuestionTag(25, "Radiation Oncology"),
-    QuestionTag(26, "Physical Medicine & Rehab")
+    QuestionTag(26, "Physical Medicine & Rehab"),
+    QuestionTag(27, "Psychiatry"),
+    QuestionTag(28, "Nephrology")
   )
 
   val byTagName = tags.map(t => t.name -> t).toMap
